@@ -47,18 +47,31 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
         else:
             print(switch)
 
-    def do_list(self, arg):
-        self.do_status("")
-
-    def do_l(self, arg):
-        self.do_list()
-
     def complete_status(self, text, line, begidx, endidx):
         mline = line.partition(' ')[2]
         offs = len(mline) - len(text)
         macs, names = db.get_macs_names()
         identifiers = macs + names
         return [f'{s[offs:]} ' for s in identifiers if s.startswith(mline)]
+
+    def do_list(self, arg=None):
+        self.do_status("")
+
+    def do_l(self, arg):
+        self.do_list()
+    
+    def do_syslog(self, arg):
+        with Session() as session:
+            if mac_regex.match(arg):
+                switch = session.query(Switch).filter(Switch.mac == arg).one()
+            else:
+                switch = session.query(Switch).filter(Switch.name == arg).one()
+
+            for logentry in switch.syslog_entries:
+                print(logentry.msg)
+    
+    def complete_syslog(self, text, line, begidx, endidx):
+        return self.complete_status(text, line, begidx, endidx)
 
     def do_name(self, arg):
         args = arg.split()

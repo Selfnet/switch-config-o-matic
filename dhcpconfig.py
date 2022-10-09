@@ -23,6 +23,8 @@ class DnsmasqDhcpConfigGenerator():
             config_lines.append(f"dhcp-host={sw.mac},{sw.ip},set:{sw.name}")
             # Only send the DHCP option to this specific device
             config_lines.append(f"dhcp-option=set:{sw.name},67,{sftp_path}")
+            # Specify our IP address as syslog server
+            config_lines.append(f"dhcp-option=set:{sw.name},7,192.168.0.1")
         
         config_lines.append("")
         return "\n".join(config_lines)
