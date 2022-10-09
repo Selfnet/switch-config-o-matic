@@ -13,7 +13,6 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
 
     def __init__(self):
         cmd.Cmd.__init__(self)
-        self.do_add("FF:FF:00:00:FF:FF")
 
     def do_add(self, arg):
         arg = arg.strip()
@@ -21,16 +20,23 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
             print(f'ERROR: Invalid MAC address "{arg}"')
             return
         
-        with Session() as session:
-            switch = Switch(mac=arg)
-            session.add(switch)
-            session.commit()
+        if db.query_mac(arg):
+            print(f'ERROR: MAC address "{arg}" already exists')
+            return
+
+        db.add_switch(arg)
 
         print(f'Added {arg}')
 
     def do_status(self, arg):
         arg = arg.strip()
-        if mac_regex.match(arg):
+
+        if arg == "":
+            with Session() as session:
+                switches = session.query(Switch).all()
+            [print(sw) for sw in switches]
+            return
+        elif mac_regex.match(arg):
             switch = db.query_mac(arg)
         else:
             switch = db.query_name(arg)
@@ -40,6 +46,12 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
             return
         else:
             print(switch)
+
+    def do_list(self, arg):
+        self.do_status("")
+
+    def do_l(self, arg):
+        self.do_list()
 
     def complete_status(self, text, line, begidx, endidx):
         mline = line.partition(' ')[2]
@@ -86,6 +98,9 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
 
     def do_q(self, arg):
         self.do_exit()
+
+    def emptyline(self):
+        pass
 
 
 if __name__ == "__main__":
