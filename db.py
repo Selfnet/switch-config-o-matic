@@ -1,6 +1,6 @@
 import enum
-from sqlalchemy import create_engine, Column, Integer, String, Enum
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy import create_engine, Column, Integer, String, Enum, ForeignKey
+from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 
 Base = declarative_base()
 engine = create_engine("sqlite:///switches.sqlite")
@@ -35,14 +35,24 @@ class Switch(Base):
     def __repr__(self):
         return f'MAC="{self.mac}", NAME="{self.name}", STATUS="{self.status.name}", IP="{self.ip}"'
 
+class SyslogEntry(Base):
+    __tablename__ = "syslog"
+
+    id = Column(Integer, primary_key=True)
+    msg = Column(String)
+    switch_id = Column(Integer, ForeignKey("switches.id"))
+
+    switch = relationship("Switch", back_populates="syslog_entries")
+    
+Switch.syslog_entries = relationship("SyslogEntry", order_by=SyslogEntry.id, back_populates="switch")
 
 def init_db():
     Base.metadata.create_all(engine)
 
 def get_next_ip():
     with Session() as session:
-        used_ips = session.query(Switch.ip).all()
-    used_last_blocks = set([int(ip.split[-1]) for ip in used_ips])
+        switches = session.query(Switch.ip).all()
+    used_last_blocks = set([int(sw.ip.split(".")[-1]) for sw in switches])
     next_free = min(set(range(10, 250)) - used_last_blocks)
     return f"192.168.0.{next_free}"
 
