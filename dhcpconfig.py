@@ -1,9 +1,10 @@
 class DnsmasqDhcpConfigGenerator():
-    def __init__(self, interface, sftp_user, sftp_pass, sftp_ip):
+    def __init__(self, interface, sftp_user, sftp_pass, sftp_ip, sftp_port):
         self.interface = interface
         self.sftp_user = sftp_user
         self.sftp_pass = sftp_pass
         self.sftp_ip = sftp_ip
+        self.sftp_port = sftp_port
 
     def generate_config(self, switches):
         config_lines = [
@@ -16,7 +17,7 @@ class DnsmasqDhcpConfigGenerator():
 
         for sw in switches:
             # Example: sftp://switch:geheim42@192.168.0.1/ar-26a-2.cfg
-            sftp_path = f"sftp://{self.sftp_user}:{self.sftp_pass}@{self.sftp_ip}/{sw.name}.cfg"
+            sftp_path = f"sftp://{self.sftp_user}:{self.sftp_pass}@{self.sftp_ip}:{self.sftp_port}/{sw.name}.cfg"
 
             config_lines.append(f"\n######### Switch: {sw.name} ({sw.mac}) #########")
             # Give this switch its specified IP-address and creates a named "MAC adress filter"

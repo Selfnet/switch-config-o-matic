@@ -11,7 +11,8 @@ async def main():
         interface="enp0s20f0u5",
         sftp_user="switch",
         sftp_pass="geheim42",
-        sftp_ip="192.168.0.1"
+        sftp_ip="192.168.0.1",
+        sftp_port=2222
     )
 
     dnsmasq_process = None
