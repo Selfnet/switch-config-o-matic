@@ -1,14 +1,14 @@
-import cmd
 import re
 import os
+import cmd
+import sys
 
 import db
-from db import Session, Switch, SwitchStatus
-
-mac_regex = re.compile('^(?:[0-9A-Fa-f]{2}[:-]){5}(?:[0-9A-Fa-f]{2})$')
+from db import Session, Switch
+from utils import mac_regex
 
 class SwitchConfigurOmaticShell(cmd.Cmd):
-    intro = 'Welcome to the Switch-config-o-matic shell.   Type help or ? to list commands.\n'
+    intro = 'Welcome to the switch-config-o-matic shell.   Type help or ? to list commands.\n'
     prompt = 'config-o-matic> '
 
     def __init__(self):
@@ -46,13 +46,21 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
             return
         else:
             print(switch)
-
-    def complete_status(self, text, line, begidx, endidx):
+    
+    def _complete_name_or_mac(self, text, line, begidx, endidx):
         mline = line.partition(' ')[2]
         offs = len(mline) - len(text)
         macs, names = db.get_macs_names()
         identifiers = macs + names
         return [f'{s[offs:]} ' for s in identifiers if s.startswith(mline)]
+    
+    def _get_time_from_syslog_msg(self, msg):
+        time_contained = msg.split(";")[0]
+        time_ = re.match(r"<.*>(.*) HUAWEI", time_contained, re.DOTALL).groups()[0]
+        return time_
+
+    def complete_status(self, text, line, begidx, endidx):
+        self._complete_name_or_mac(text, line, begidx, endidx)
 
     def do_list(self, arg=None):
         self.do_status("")
@@ -61,17 +69,30 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
         self.do_list()
     
     def do_syslog(self, arg):
-        with Session() as session:
-            if mac_regex.match(arg):
-                switch = session.query(Switch).filter(Switch.mac == arg).one()
-            else:
-                switch = session.query(Switch).filter(Switch.name == arg).one()
+        args = arg.split()
+        do_verbose = "-v" in args
+        while "-v" in args: args.remove("-v")
+        name_or_mac = args[0]
 
-            for logentry in switch.syslog_entries:
-                print(logentry.msg)
+        msgs = db.get_syslog_entries(name_or_mac)
+        if do_verbose:
+            for msg in msgs: print(msg + "\n")
+        else:
+            try:
+                for msg in msgs:
+                    if not "OPS_LOG_USERDEFINED_INFORMATION" in msg:
+                        continue
+                    time_ = self._get_time_from_syslog_msg(msg)
+                    msg_text = msg.split("; ")[1].split("(")[0]
+                    print(f"{time_} | {msg_text}")
+            except:
+                print(msg)
+    
+    def help_syslog(self):
+        return "Syntax: syslog [-v] name_or_mac"
     
     def complete_syslog(self, text, line, begidx, endidx):
-        return self.complete_status(text, line, begidx, endidx)
+        return self._complete_name_or_mac(text, line, begidx, endidx)
 
     def do_name(self, arg):
         args = arg.split()
@@ -85,6 +106,23 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
         offs = len(mline) - len(text)
         macs, _ = db.get_macs_names()
         return [f'{s[offs:]} ' for s in macs if s.startswith(mline)]
+
+    def do_errors(self, arg):
+        for msg in db.get_syslog_entries(arg):
+            try:
+                self._get_time_from_syslog_msg
+                body = msg.split(";")[1]
+                if "<error>" in body:
+                    tags = re.findall(r"<error-tag>(.*)</error-tag>", body)
+                    error_msgs = re.findall(r"<error-message.*>(.*)</error-message>", body)
+                    
+                    for error in zip(tags, error_msgs):
+                        print(f"{time_} | {error[0]} | {error[1]}")
+            except:
+                print(msg)
+    
+    def complete_errors(self, text, line, begidx, endidx):
+        return self._complete_name_or_mac(text, line, begidx, endidx)
 
     def default(self, line):
         line = line.strip()
@@ -114,8 +152,17 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
 
     def emptyline(self):
         pass
+    
+    def cmdloop_with_keyboard_interrupt(self):
+        doQuit = False
+        while doQuit != True:
+            try:
+                self.cmdloop()
+                doQuit = True
+            except KeyboardInterrupt:
+                sys.stdout.write('\n')
 
 
 if __name__ == "__main__":
     db.init_db()
-    SwitchConfigurOmaticShell().cmdloop()
+    SwitchConfigurOmaticShell().cmdloop_with_keyboard_interrupt()
