@@ -1,4 +1,5 @@
 import enum
+from utils import mac_regex
 from sqlalchemy import create_engine, Column, Integer, String, Enum, ForeignKey
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 
@@ -99,3 +100,12 @@ def query_all_unfinished_switches():
         return session.query(Switch) \
             .filter(Switch.status != SwitchStatus.FINISNED) \
             .filter(Switch.name != None)
+
+def get_syslog_entries(mac_or_name):
+    with Session() as session:
+        if mac_regex.match(mac_or_name):
+            switch = session.query(Switch).filter(Switch.mac == mac_or_name).one()
+        else:
+            switch = session.query(Switch).filter(Switch.name == mac_or_name).one()
+
+        return [le.msg for le in switch.syslog_entries]

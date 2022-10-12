@@ -4,9 +4,6 @@ from db import Session, Switch, SwitchStatus
 from dhcpconfig import DnsmasqDhcpConfigGenerator
 
 async def main():
-    #db.add_switch("b0:22:7a:e6:91:34")
-    #db.name_last_added_switch("ar3-26a-2")
-
     config_gen = DnsmasqDhcpConfigGenerator(
         interface="enp0s20f0u5",
         sftp_user="switch",
