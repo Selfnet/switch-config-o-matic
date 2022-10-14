@@ -6,6 +6,7 @@ import sys
 import db
 from db import Session, Switch
 from utils import mac_regex
+from syslog import get_errors_from_syslog_lines, get_infos_from_syslog_lines
 
 class SwitchConfigurOmaticShell(cmd.Cmd):
     intro = 'Welcome to the switch-config-o-matic shell.   Type help or ? to list commands.\n'
@@ -54,11 +55,6 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
         identifiers = macs + names
         return [f'{s[offs:]} ' for s in identifiers if s.startswith(mline)]
     
-    def _get_time_from_syslog_msg(self, msg):
-        time_contained = msg.split(";")[0]
-        time_ = re.match(r"<.*>(.*) HUAWEI", time_contained, re.DOTALL).groups()[0]
-        return time_
-
     def complete_status(self, text, line, begidx, endidx):
         self._complete_name_or_mac(text, line, begidx, endidx)
 
@@ -78,15 +74,9 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
         if do_verbose:
             for msg in msgs: print(msg + "\n")
         else:
-            try:
-                for msg in msgs:
-                    if not "OPS_LOG_USERDEFINED_INFORMATION" in msg:
-                        continue
-                    time_ = self._get_time_from_syslog_msg(msg)
-                    msg_text = msg.split("; ")[1].split("(")[0]
-                    print(f"{time_} | {msg_text}")
-            except:
-                print(msg)
+            infos = get_infos_from_syslog_lines(msgs)
+            for info in infos:
+                print(info)
     
     def help_syslog(self):
         return "Syntax: syslog [-v] name_or_mac"
@@ -108,18 +98,10 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
         return [f'{s[offs:]} ' for s in macs if s.startswith(mline)]
 
     def do_errors(self, arg):
-        for msg in db.get_syslog_entries(arg):
-            try:
-                self._get_time_from_syslog_msg
-                body = msg.split(";")[1]
-                if "<error>" in body:
-                    tags = re.findall(r"<error-tag>(.*)</error-tag>", body)
-                    error_msgs = re.findall(r"<error-message.*>(.*)</error-message>", body)
-                    
-                    for error in zip(tags, error_msgs):
-                        print(f"{time_} | {error[0]} | {error[1]}")
-            except:
-                print(msg)
+        msgs = db.get_syslog_entries(arg)
+        errors = get_errors_from_syslog_lines(msgs)
+        for error in errors:
+            print(error)
     
     def complete_errors(self, text, line, begidx, endidx):
         return self._complete_name_or_mac(text, line, begidx, endidx)
