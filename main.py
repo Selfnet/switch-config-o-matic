@@ -4,9 +4,17 @@ import cmd
 import sys
 
 import db
+import asyncio
+import logging
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from db import Session, Switch
 from utils import mac_regex
+from syslog_server import SyslogServer
 from syslog import get_errors_from_syslog_lines, get_infos_from_syslog_lines
+
+FORMAT = "%(asctime)s | %(filename)s | %(levelname)s: %(message)s"
+logging.basicConfig(level=logging.INFO, format=FORMAT, datefmt='%d.%m.%Y, %H:%M:%S',
+    filename="log.txt", filemode='a')
 
 class SwitchConfigurOmaticShell(cmd.Cmd):
     intro = 'Welcome to the switch-config-o-matic shell.   Type help or ? to list commands.\n'
@@ -14,13 +22,14 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
 
     def __init__(self):
         cmd.Cmd.__init__(self)
+        self.exit_requested = False
 
     def do_add(self, arg):
         arg = arg.strip()
         if not mac_regex.match(arg):
             print(f'ERROR: Invalid MAC address "{arg}"')
             return
-        
+
         if db.query_mac(arg):
             print(f'ERROR: MAC address "{arg}" already exists')
             return
@@ -47,14 +56,14 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
             return
         else:
             print(switch)
-    
+
     def _complete_name_or_mac(self, text, line, begidx, endidx):
         mline = line.partition(' ')[2]
         offs = len(mline) - len(text)
         macs, names = db.get_macs_names()
         identifiers = macs + names
         return [f'{s[offs:]} ' for s in identifiers if s.startswith(mline)]
-    
+
     def complete_status(self, text, line, begidx, endidx):
         self._complete_name_or_mac(text, line, begidx, endidx)
 
@@ -63,7 +72,7 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
 
     def do_l(self, arg):
         self.do_list()
-    
+
     def do_syslog(self, arg):
         args = arg.split()
         do_verbose = "-v" in args
@@ -77,10 +86,10 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
             infos = get_infos_from_syslog_lines(msgs)
             for info in infos:
                 print(info)
-    
+
     def help_syslog(self):
         return "Syntax: syslog [-v] name_or_mac"
-    
+
     def complete_syslog(self, text, line, begidx, endidx):
         return self._complete_name_or_mac(text, line, begidx, endidx)
 
@@ -90,7 +99,7 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
             db.name_last_added_switch(args[0])
         elif len(args) == 2:
             db.name_switch(args[0], args[1])
-    
+
     def complete_name(self, text, line, begidx, endidx):
         mline = line.partition(' ')[2]
         offs = len(mline) - len(text)
@@ -102,7 +111,7 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
         errors = get_errors_from_syslog_lines(msgs)
         for error in errors:
             print(error)
-    
+
     def complete_errors(self, text, line, begidx, endidx):
         return self._complete_name_or_mac(text, line, begidx, endidx)
 
@@ -124,27 +133,42 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
         os.system("clear")
 
     def do_exit(self, arg=None):
-        exit()
+        self.exit_requested = True
+        return True
 
     def do_quit(self, arg):
-        self.do_exit()
+        return self.do_exit()
 
     def do_q(self, arg):
-        self.do_exit()
+        return self.do_exit()
 
     def emptyline(self):
         pass
-    
+
     def cmdloop_with_keyboard_interrupt(self):
-        doQuit = False
-        while doQuit != True:
+        while not self.exit_requested:
             try:
                 self.cmdloop()
-                doQuit = True
+                self.exit_requested = True
             except KeyboardInterrupt:
                 sys.stdout.write('\n')
 
 
-if __name__ == "__main__":
+async def main():
+    logging.info("     --------------- START switch-config-o-matic ---------------")
     db.init_db()
+    loop = asyncio.get_running_loop()
+    thread_pool = ThreadPoolExecutor()
+    syslog_server = SyslogServer()
+
+    syslog_task = loop.run_in_executor(thread_pool, syslog_server.start)
+
     SwitchConfigurOmaticShell().cmdloop_with_keyboard_interrupt()
+
+    await loop.run_in_executor(thread_pool, syslog_server.stop)
+    await syslog_task
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+
