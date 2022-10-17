@@ -3,16 +3,18 @@ LOG_FILE = 'syslog_server.log'
 HOST, PORT = "0.0.0.0", 514
 
 import logging
+import utils
 import socketserver
-import db
-from db import Switch, SyslogEntry
+from db import create_scoped_session, Switch, SyslogEntry
+
+Session = create_scoped_session()
 
 class SyslogUDPHandler(socketserver.BaseRequestHandler):
     def handle(self):
         syslog_message = str(bytes.decode(self.request[0].strip()))
         switch_ip = self.client_address[0]
 
-        with db.Session() as session:
+        with Session() as session:
             sw = session.query(Switch).filter(Switch.ip == switch_ip).one()
             sw.syslog_entries.append(SyslogEntry(msg=syslog_message))
             session.commit()
@@ -33,12 +35,9 @@ class SyslogServer():
 
 
 if __name__ == "__main__":
+    utils.configure_logging()
     try:
         syslog_server = SyslogServer()
         syslog_server.start()
-    except (IOError, SystemExit):
-        syslog_server.stop()
-        raise
     except KeyboardInterrupt:
-        syslog_server.stop()
-        print ("Crtl+C Pressed. Shutting down.")
+        logging.info("Exit syslog server")

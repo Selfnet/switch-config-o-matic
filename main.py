@@ -4,19 +4,19 @@ import cmd
 import sys
 
 import db
-import asyncio
+import subprocess
 import logging
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+import shutil
+from concurrent.futures import ThreadPoolExecutor
 
-from dhcp import run_dhcp_config_loop
-from db import Session, Switch
-from utils import mac_regex
+from dhcp import DhcpServer
+from db import create_scoped_session, Switch
+from utils import mac_regex, configure_logging
 from syslog_server import SyslogServer
 from syslog import get_errors_from_syslog_lines, get_infos_from_syslog_lines
 
-FORMAT = "%(asctime)s | %(filename)s | %(levelname)s: %(message)s"
-logging.basicConfig(level=logging.INFO, format=FORMAT, datefmt='%d.%m.%Y, %H:%M:%S',
-    filename="log.txt", filemode='a')
+Session = create_scoped_session()
+configure_logging()
 
 class SwitchConfigurOmaticShell(cmd.Cmd):
     intro = 'Welcome to the switch-config-o-matic shell.   Type help or ? to list commands.\n'
@@ -136,6 +136,7 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
 
     def do_exit(self, arg=None):
         self.exit_requested = True
+        db.Session.remove()
         return True
 
     def do_quit(self, arg):
@@ -156,23 +157,28 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
                 sys.stdout.write('\n')
 
 
-async def main():
+def main():
     logging.info("     --------------- START switch-config-o-matic ---------------")
     db.init_db()
-    loop = asyncio.get_running_loop()
-    thread_pool = ThreadPoolExecutor()
-    syslog_server = SyslogServer()
 
-    syslog_task = loop.run_in_executor(thread_pool, syslog_server.start)
-    dhcp_task = loop.run_in_executor(thread_pool, run_dhcp_config_loop)
+    python_exec = os.path.realpath(shutil.which("python"))
+    print(python_exec)
+
+    # Temporarily allow the two python processes to access privileged ports without root
+    subprocess.call(["sudo", "setcap", "cap_net_bind_service=+ep", python_exec])
+
+    syslog_process = subprocess.Popen(["python", "syslog_server.py"])
+    dhcp_process = subprocess.Popen(["python", "dhcp.py"])
+
+    # Remove privileged ports exception
+    subprocess.call(["sudo", "setcap", "-r", python_exec])
 
     SwitchConfigurOmaticShell().cmdloop_with_keyboard_interrupt()
 
-    await loop.run_in_executor(thread_pool, syslog_server.stop)
-    await syslog_task
-    dhcp_task.cancel()
+    syslog_process.terminate()
+    dhcp_process.terminate()
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
 
