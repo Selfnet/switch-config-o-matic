@@ -7,6 +7,8 @@ import db
 import asyncio
 import logging
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+
+from dhcp import run_dhcp_config_loop
 from db import Session, Switch
 from utils import mac_regex
 from syslog_server import SyslogServer
@@ -162,11 +164,13 @@ async def main():
     syslog_server = SyslogServer()
 
     syslog_task = loop.run_in_executor(thread_pool, syslog_server.start)
+    dhcp_task = loop.run_in_executor(thread_pool, run_dhcp_config_loop)
 
     SwitchConfigurOmaticShell().cmdloop_with_keyboard_interrupt()
 
     await loop.run_in_executor(thread_pool, syslog_server.stop)
     await syslog_task
+    dhcp_task.cancel()
 
 
 if __name__ == "__main__":
