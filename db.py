@@ -1,11 +1,17 @@
 import enum
 from utils import mac_regex
 from sqlalchemy import create_engine, Column, Integer, String, Enum, ForeignKey
-from sqlalchemy.orm import declarative_base, sessionmaker, relationship
+from sqlalchemy.orm import declarative_base, sessionmaker, scoped_session, relationship
 
 Base = declarative_base()
-engine = create_engine("sqlite:///switches.sqlite")
-Session = sessionmaker(bind=engine)
+_engine = create_engine("sqlite:///switches.sqlite")
+
+def create_scoped_session():
+    engine = create_engine("sqlite:///switches.sqlite")
+    session_factory = sessionmaker(bind=engine)
+    return scoped_session(session_factory)
+
+Session = create_scoped_session()
 
 class SwitchStatus(enum.Enum):
     CREATED = 0
@@ -44,17 +50,17 @@ class SyslogEntry(Base):
     switch_id = Column(Integer, ForeignKey("switches.id"))
 
     switch = relationship("Switch", back_populates="syslog_entries")
-    
+
 Switch.syslog_entries = relationship("SyslogEntry", order_by=SyslogEntry.id, back_populates="switch")
 
 def init_db():
-    Base.metadata.create_all(engine)
+    Base.metadata.create_all(_engine)
 
 def get_next_ip():
     with Session() as session:
         switches = session.query(Switch.ip).all()
     used_last_blocks = set([int(sw.ip.split(".")[-1]) for sw in switches])
-    next_free = min(set(range(10, 250)) - used_last_blocks)
+    next_free = min(set(range(5, 250)) - used_last_blocks)
     return f"192.168.0.{next_free}"
 
 def add_switch(mac):
@@ -93,7 +99,7 @@ def name_switch(mac, name):
             raise ValueError(f'Switch {mac} already named {sw.name}')
         sw.name = name
         sw.status = SwitchStatus.NAMED
-        session.commit() 
+        session.commit()
 
 def query_all_unfinished_switches():
     with Session() as session:
