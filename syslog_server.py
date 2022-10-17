@@ -4,7 +4,6 @@ HOST, PORT = "0.0.0.0", 514
 
 import logging
 import socketserver
-import asyncio
 import db
 from db import Switch, SyslogEntry
 
