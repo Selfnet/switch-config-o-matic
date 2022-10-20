@@ -12,7 +12,7 @@ class DnsmasqDhcpConfigGenerator():
             f"interface={self.interface}",
             "dhcp-option=3,0.0.0.0",  # No gateway / router
             "dhcp-ignore=tag:!known",  # Ignore all devices not specified below using dhcp-host
-            "dhcp-range=192.168.0.5,192.168.0.250,2m"
+            "dhcp-range=192.168.0.10,192.168.0.250,2m"
         ]
 
         for sw in switches:
@@ -26,6 +26,6 @@ class DnsmasqDhcpConfigGenerator():
             config_lines.append(f"dhcp-option=set:{sw.name},67,{sftp_path}")
             # Specify our IP address as syslog server
             config_lines.append(f"dhcp-option=set:{sw.name},7,192.168.0.1")
-        
+
         config_lines.append("")
         return "\n".join(config_lines)
