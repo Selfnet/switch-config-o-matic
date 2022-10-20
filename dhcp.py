@@ -12,7 +12,7 @@ class DhcpServer():
         self.shutdown_requested = False
         self.restart_interval_seconds = restart_interval_seconds
         self.config_gen = DnsmasqDhcpConfigGenerator(
-            interface="enp0s20f0u5",
+            interface="enp0s31f6",
             sftp_user="switch",
             sftp_pass="geheim42",
             sftp_ip="192.168.0.1",
