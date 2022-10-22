@@ -1,13 +1,14 @@
 import enum
 from utils import mac_regex
+from config import db_url, ztp_network, ztp_interface_ip
 from sqlalchemy import create_engine, Column, Integer, String, Enum, ForeignKey
 from sqlalchemy.orm import declarative_base, sessionmaker, scoped_session, relationship
 
 Base = declarative_base()
-_engine = create_engine("sqlite:///switches.sqlite")
+_engine = create_engine(db_url)
 
 def create_scoped_session():
-    engine = create_engine("sqlite:///switches.sqlite")
+    engine = create_engine(db_url)
     session_factory = sessionmaker(bind=engine)
     return scoped_session(session_factory)
 
@@ -58,10 +59,10 @@ def init_db():
 
 def get_next_ip():
     with Session() as session:
-        switches = session.query(Switch.ip).all()
-    used_last_blocks = set([int(sw.ip.split(".")[-1]) for sw in switches])
-    next_free = min(set(range(5, 250)) - used_last_blocks)
-    return f"192.168.0.{next_free}"
+        used_ips = [sw.ip for sw in session.query(Switch.ip).all()]
+    used_ips.append(ztp_interface_ip)
+
+    return next(ip for ip in ztp_network.hosts() if not ip in used_ips)
 
 def add_switch(mac):
     switch = Switch(mac=mac, ip=get_next_ip())

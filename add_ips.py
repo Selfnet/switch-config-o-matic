@@ -2,7 +2,7 @@ import re
 import glob
 import subprocess
 
-from config import switch_config_dir, eth_interface
+from config import switch_config_dir, ztp_interface
 
 def get_ip(config_lines):
     for i in range(len(config_lines)):
@@ -20,7 +20,7 @@ for config_path in glob.glob(f"{switch_config_dir}/*"):
     if ip is None:
         continue
 
-    cmds += f"addr add {ip} dev {eth_interface}\n"
+    cmds += f"addr add {ip} dev {ztp_interface}\n"
 
 
 subprocess.run(["sudo", "ip", "-batch", "-"], input=cmds.encode(), check=True)
