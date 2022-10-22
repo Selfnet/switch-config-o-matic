@@ -106,7 +106,8 @@ def query_all_unfinished_switches():
     with Session() as session:
         return session.query(Switch) \
             .filter(Switch.status != SwitchStatus.FINISNED) \
-            .filter(Switch.name != None)
+            .filter(Switch.name != None) \
+            .all()
 
 def get_syslog_entries(mac_or_name):
     with Session() as session:

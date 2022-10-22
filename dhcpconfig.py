@@ -1,7 +1,7 @@
 from config import *
 
 
-def generate_config(self, switches):
+def generate_config(switches):
     config_lines = [
         "port=0",  # Disable DNS server
         f"interface={ztp_interface}",
