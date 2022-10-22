@@ -2,22 +2,16 @@ import subprocess
 import db
 import logging
 import utils
+
+import dhcpconfig
+from config import dhcp_reload_interval_sec
 from db import create_scoped_session, Switch, SwitchStatus
-from dhcpconfig import DnsmasqDhcpConfigGenerator
 
 Session = create_scoped_session()
 
 class DhcpServer():
-    def __init__(self, restart_interval_seconds=5):
+    def __init__(self):
         self.shutdown_requested = False
-        self.restart_interval_seconds = restart_interval_seconds
-        self.config_gen = DnsmasqDhcpConfigGenerator(
-            interface="enp0s31f6",
-            sftp_user="switch",
-            sftp_pass="SuperSecretPassword",
-            sftp_ip="192.168.0.1",
-            sftp_port=2222
-        )
 
     def start(self):
         logging.info("Starting DHCP config loop")
@@ -25,11 +19,11 @@ class DhcpServer():
 
         while not self.shutdown_requested:
             switches = db.query_all_unfinished_switches()
-            dnsmasq_config = self.config_gen.generate_config(switches)
+            dnsmasq_config = dhcpconfig.generate_config(switches)
             with open("dnsmasq.conf", "w") as f:
                 f.write(dnsmasq_config)
 
-            dnsmasq_result = subprocess.run(["sudo", "timeout", str(self.restart_interval_seconds),
+            dnsmasq_result = subprocess.run(["sudo", "timeout", str(dhcp_reload_interval_sec),
                 "dnsmasq", "--no-daemon", "--conf-file=dnsmasq.conf"], text=True,
                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
@@ -57,5 +51,5 @@ class DhcpServer():
 if __name__ == "__main__":
     db.init_db()
     utils.configure_logging()
-    server = DhcpServer(10)
+    server = DhcpServer()
     server.start()
