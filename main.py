@@ -166,7 +166,8 @@ def main():
     python_exec = os.path.realpath(shutil.which("python"))
     print(python_exec)
 
-    # Temporarily allow the two python processes to access privileged ports without root
+    # Temporarily allow the two python processes to access privileged ports without root,
+    # so that we can terminate these processes afterwards
     subprocess.call(["sudo", "setcap", "cap_net_bind_service=+ep", python_exec])
 
     syslog_process = subprocess.Popen(["python", "syslog_server.py"])

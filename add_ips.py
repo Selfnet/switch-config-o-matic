@@ -14,6 +14,5 @@ for config_path in glob.glob(f"{switch_config_dir}/*"):
 
     cmds += f"addr add {ip} dev {ztp_interface}\n"
 
-print(cmds)
-#subprocess.run(["sudo", "ip", "-batch", "-"], input=cmds.encode(), check=True)
+subprocess.run(["sudo", "ip", "-batch", "-"], input=cmds.encode(), check=True)
 
