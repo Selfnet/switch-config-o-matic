@@ -15,7 +15,7 @@ class SyslogUDPHandler(socketserver.BaseRequestHandler):
         switch_ip = self.client_address[0]
 
         with Session() as session:
-            sw = session.query(Switch).filter(Switch.ip == switch_ip).one()
+            sw = session.query(Switch).filter(Switch.ztp_ip == switch_ip).one()
             sw.syslog_entries.append(SyslogEntry(msg=syslog_message))
             session.commit()
 

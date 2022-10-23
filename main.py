@@ -19,7 +19,7 @@ Session = create_scoped_session()
 configure_logging()
 
 class SwitchConfigurOmaticShell(cmd.Cmd):
-    intro = 'Welcome to the switch-config-o-matic shell.   Type help or ? to list commands.\n'
+    intro = ''
     prompt = 'config-o-matic> '
 
     def __init__(self):
@@ -155,6 +155,8 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
                 self.exit_requested = True
             except KeyboardInterrupt:
                 sys.stdout.write('\n')
+            except Exception as e:
+                print(e)
 
 
 def main():
@@ -173,8 +175,8 @@ def main():
     # Remove privileged ports exception
     subprocess.call(["sudo", "setcap", "-r", python_exec])
 
+    print('Welcome to the switch-config-o-matic shell.   Type help or ? to list commands.\n')
     SwitchConfigurOmaticShell().cmdloop_with_keyboard_interrupt()
-
     syslog_process.terminate()
     dhcp_process.terminate()
 

@@ -1,4 +1,5 @@
 import enum
+import config_parsing
 from utils import mac_regex
 from config import db_url, ztp_network, ztp_interface_ip
 from sqlalchemy import create_engine, Column, Integer, String, Enum, ForeignKey
@@ -38,10 +39,12 @@ class Switch(Base):
     mac = Column(String, nullable=False)
     name = Column(String)
     status = Column(Enum(SwitchStatus), default=SwitchStatus.CREATED)
-    ip = Column(String)
+    ztp_ip = Column(String)
+    final_ip = Column(String)  # The IP of service port 1 which is assigned by the config file
 
     def __repr__(self):
-        return f'MAC="{self.mac}", NAME="{self.name}", STATUS="{self.status.name}", IP="{self.ip}"'
+        return f'<MAC="{self.mac}", NAME="{self.name}", STATUS="{self.status.name}", ' + \
+            f'ZTP_IP="{self.ztp_ip}", FINAL_IP="{self.final_ip}">'
 
 class SyslogEntry(Base):
     __tablename__ = "syslog"
@@ -59,13 +62,13 @@ def init_db():
 
 def get_next_ip():
     with Session() as session:
-        used_ips = [sw.ip for sw in session.query(Switch.ip).all()]
+        used_ips = [sw.ztp_ip for sw in session.query(Switch.ztp_ip).all()]
     used_ips.append(ztp_interface_ip)
 
     return next(ip for ip in ztp_network.hosts() if not ip in used_ips)
 
 def add_switch(mac):
-    switch = Switch(mac=mac, ip=get_next_ip())
+    switch = Switch(mac=mac, ztp_ip=str(get_next_ip()))
     with Session() as session:
         session.add(switch)
         session.commit()
@@ -86,21 +89,29 @@ def get_macs_names():
 
     return macs, names
 
-def name_last_added_switch(name):
-    with Session() as session:
-        sw = session.query(Switch).order_by(Switch.id.desc()).first()
-        sw.name = name
-        sw.status = SwitchStatus.NAMED
-        session.commit()
+def _fill_final_ip(switch):
+    ip = config_parsing.get_ip(switch.name)
+    if ip is None:
+        print("Warning: Switch has no IP assigned on port 1.\n" + \
+              "It will not be possible to check when ZTP is finished.\n" + \
+              "Please observe this switch manually.")
+    switch.final_ip = ip
 
 def name_switch(mac, name):
     with Session() as session:
         sw = session.query(Switch).filter(Switch.mac == mac).one()
         if sw.name != None:
-            raise ValueError(f'Switch {mac} already named {sw.name}')
+            print(f'Error: Switch {mac} already named {sw.name}')
+            return
         sw.name = name
         sw.status = SwitchStatus.NAMED
+        _fill_final_ip(sw)
         session.commit()
+
+def name_last_added_switch(name):
+    with Session() as session:
+        sw = session.query(Switch).order_by(Switch.id.desc()).first()
+    name_switch(sw.mac, name)
 
 def query_all_unfinished_switches():
     with Session() as session:
