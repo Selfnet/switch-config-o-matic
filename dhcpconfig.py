@@ -16,7 +16,7 @@ def generate_config(switches):
 
         config_lines.append(f"\n######### Switch: {sw.name} ({sw.mac}) #########")
         # Give this switch its specified IP-address and creates a named "MAC adress filter"
-        config_lines.append(f"dhcp-host={sw.mac},{sw.ip},set:{sw.name}")
+        config_lines.append(f"dhcp-host={sw.mac},{sw.ztp_ip},set:{sw.name}")
         # Only send the DHCP option to this specific device
         config_lines.append(f"dhcp-option=set:{sw.name},67,{sftp_path}")
         # Specify our IP address as syslog server
