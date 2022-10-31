@@ -32,7 +32,7 @@ class DhcpServer():
             ack_lines = [l for l in lines if "DHCPACK" in l]
 
             for line in ack_lines:
-                mac = line.split()[3]
+                mac = line.split()[3].lower()
                 with Session() as session:
                     sw = session.query(Switch).filter(Switch.mac == mac).one()
                     if sw.status < SwitchStatus.DHCP_SUCCESS:
@@ -40,7 +40,7 @@ class DhcpServer():
                     session.commit()
 
             if len(ack_lines) > 0:
-                logging.debug(ack_lines)
+                logging.debug(lines)
 
         logging.info("Stopped DHCP config loop")
 

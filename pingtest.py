@@ -1,6 +1,7 @@
 import asyncio
 import platform
 import subprocess
+import time
 
 import config
 import db
@@ -29,6 +30,9 @@ async def main():
             for ping_successful, switch in zip(ping_results, switches):
                 if ping_successful:
                     switch.status = SwitchStatus.FINISNED
+                    session.commit()
+
+            time.sleep(1)
 
 
 if __name__ == "__main__":

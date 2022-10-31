@@ -4,7 +4,7 @@ LOG_FORMAT = "%(asctime)s | %(filename)s | %(levelname)s | %(thread)d: %(message
 
 ztp_network = ipaddress.ip_network("192.168.0.0/23")
 ztp_interface = "enp0s31f6"
-ztp_interface_ip = ztp_network[1]
+ztp_interface_ip = ztp_network[1].exploded
 
 db_url = "sqlite:///switches.sqlite"
 

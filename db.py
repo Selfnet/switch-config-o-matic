@@ -1,3 +1,4 @@
+import re
 import enum
 import config_parsing
 from utils import mac_regex
@@ -65,9 +66,19 @@ def get_next_ip():
         used_ips = [sw.ztp_ip for sw in session.query(Switch.ztp_ip).all()]
     used_ips.append(ztp_interface_ip)
 
-    return next(ip for ip in ztp_network.hosts() if not ip in used_ips)
+    print(used_ips)
+
+    for ip in ztp_network.hosts():
+        if not ip.exploded in used_ips:
+            return ip.exploded
 
 def add_switch(mac):
+    if not ":" in mac:
+        mac = ":".join(re.findall("..", mac))
+    # The code contains the management interface's MAC which ends on a zero
+    # The ZTP MAC ends on a one. Set that here:
+    mac = mac[:-1] + "3"
+    mac = mac.lower()
     switch = Switch(mac=mac, ztp_ip=str(get_next_ip()))
     with Session() as session:
         session.add(switch)
