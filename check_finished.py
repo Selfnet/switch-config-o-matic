@@ -17,7 +17,6 @@ async def ip_responds_to_ping_async(host):
 
 async def main():
     while True:
-        print("Starting")
         with db.Session() as session:
             switches = session.query(Switch) \
                 .filter(Switch.status != SwitchStatus.FINISNED) \
