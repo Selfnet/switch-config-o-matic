@@ -4,7 +4,7 @@ import logging
 
 from config import LOG_FORMAT
 
-mac_regex = re.compile('^(?:[0-9A-Fa-f]{2}[:-]){5}(?:[0-9A-Fa-f]{2})$')
+mac_regex = re.compile('^(?:[0-9A-Fa-f]{2}[:-]?){5}(?:[0-9A-Fa-f]{2})$')
 
 
 def configure_logging():
