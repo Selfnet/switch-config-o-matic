@@ -1,7 +1,7 @@
 import re
 import enum
 import config_parsing
-from utils import mac_regex
+from utils import mac_regex, ensure_ztp_mac
 from config import db_url, ztp_network, ztp_interface_ip
 from sqlalchemy import create_engine, Column, Integer, String, Enum, ForeignKey
 from sqlalchemy.orm import declarative_base, sessionmaker, scoped_session, relationship
@@ -73,18 +73,14 @@ def get_next_ip():
             return ip.exploded
 
 def add_switch(mac):
-    if not ":" in mac:
-        mac = ":".join(re.findall("..", mac))
-    # The code contains the management interface's MAC which ends on a zero
-    # The ZTP MAC ends on a one. Set that here:
-    mac = mac[:-1] + "3"
-    mac = mac.lower()
+    mac = ensure_ztp_mac(mac)
     switch = Switch(mac=mac, ztp_ip=str(get_next_ip()))
     with Session() as session:
         session.add(switch)
         session.commit()
 
 def query_mac(mac):
+    mac = ensure_ztp_mac(mac)
     with Session() as session:
         return session.query(Switch).filter(Switch.mac == mac).scalar()
 
@@ -109,6 +105,7 @@ def _fill_final_ip(switch):
     switch.final_ip = ip
 
 def name_switch(mac, name):
+    mac = ensure_ztp_mac(mac)
     with Session() as session:
         sw = session.query(Switch).filter(Switch.mac == mac).one()
         if sw.name != None:
@@ -134,7 +131,8 @@ def query_all_unfinished_switches():
 def get_syslog_entries(mac_or_name):
     with Session() as session:
         if mac_regex.match(mac_or_name):
-            switch = session.query(Switch).filter(Switch.mac == mac_or_name).one()
+            mac = ensure_ztp_mac(mac_or_name)
+            switch = session.query(Switch).filter(Switch.mac == mac).one()
         else:
             switch = session.query(Switch).filter(Switch.name == mac_or_name).one()
 

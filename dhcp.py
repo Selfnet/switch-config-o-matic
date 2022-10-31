@@ -39,8 +39,9 @@ class DhcpServer():
                         sw.status = SwitchStatus.DHCP_SUCCESS
                     session.commit()
 
-            if len(ack_lines) > 0:
-                logging.debug(lines)
+            if len(lines) > 0:
+                with open("dnsmasq.log", "a") as logfile:
+                    logfile.write("\n".join(lines) + "\n\n")
 
         logging.info("Stopped DHCP config loop")
 

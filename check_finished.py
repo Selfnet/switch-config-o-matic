@@ -9,7 +9,8 @@ from db import Switch, SwitchStatus
 
 async def ip_responds_to_ping_async(host):
     ping_process = await asyncio.create_subprocess_exec(
-        "ping", "-c", "1", "-I", config.ztp_interface, host)
+        "ping", "-c", "1", "-I", config.ztp_interface, host,
+        stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL)
     return_code = await ping_process.wait()
     return return_code == 0
 
@@ -32,7 +33,7 @@ async def main():
                     switch.status = SwitchStatus.FINISNED
                     session.commit()
 
-            time.sleep(1)
+            time.sleep(10)
 
 
 if __name__ == "__main__":

@@ -12,7 +12,7 @@ def generate_config(switches):
 
     for sw in switches:
         # Example: sftp://switch:SuperSecretPassword@192.168.0.1/ar-26a-2.cfg
-        sftp_path = f"sftp://{sftp_user}:{sftp_pass}@{sftp_ip}:{sftp_port}/{sw.name}"
+        sftp_path = f"sftp://{sftp_user}:{sftp_pass}@{sftp_ip}:{sftp_port}/{sw.name}.cfg"
 
         config_lines.append(f"\n######### Switch: {sw.name} ({sw.mac}) #########")
         # Give this switch its specified IP-address and creates a named "MAC adress filter"
