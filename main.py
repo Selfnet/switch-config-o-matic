@@ -148,6 +148,11 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
     def emptyline(self):
         pass
 
+    def get_valid_commands(self):
+        names = self.get_names()
+        valid = [name[4:] for name in names if name[:3] == 'do_']
+        return valid
+
     def cmdloop_with_keyboard_interrupt(self):
         while not self.exit_requested:
             try:
@@ -172,6 +177,7 @@ def main():
 
     syslog_process = subprocess.Popen(["python", "syslog_server.py"])
     dhcp_process = subprocess.Popen(["python", "dhcp.py"])
+    ping_process = subprocess.Popen(["python", "check_finished.py"])
 
     # Remove privileged ports exception
     subprocess.call(["sudo", "setcap", "-r", python_exec])
@@ -180,6 +186,7 @@ def main():
     SwitchConfigurOmaticShell().cmdloop_with_keyboard_interrupt()
     syslog_process.terminate()
     dhcp_process.terminate()
+    ping_process.terminate()
 
 
 if __name__ == "__main__":
