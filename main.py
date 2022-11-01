@@ -13,7 +13,7 @@ from dhcp import DhcpServer
 from db import create_scoped_session, Switch
 from utils import mac_regex, configure_logging
 from syslog_server import SyslogServer
-from syslog import get_errors_from_syslog_lines, get_infos_from_syslog_lines
+from syslog import get_human_readable_syslog_messages
 
 Session = create_scoped_session()
 configure_logging()
@@ -75,7 +75,7 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
     def do_l(self, arg):
         self.do_list()
 
-    def do_syslog(self, arg):
+    def do_log(self, arg):
         args = arg.split()
         do_verbose = "-v" in args
         while "-v" in args: args.remove("-v")
@@ -85,14 +85,14 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
         if do_verbose:
             for msg in msgs: print(msg + "\n")
         else:
-            infos = get_infos_from_syslog_lines(msgs)
-            for info in infos:
-                print(info)
+            readable_msgs = get_human_readable_syslog_messages(msgs)
+            for msg in readable_msgs:
+                print(msg)
 
-    def help_syslog(self):
+    def help_log(self):
         return "Syntax: syslog [-v] name_or_mac"
 
-    def complete_syslog(self, text, line, begidx, endidx):
+    def complete_log(self, text, line, begidx, endidx):
         return self._complete_name_or_mac(text, line, begidx, endidx)
 
     def do_name(self, arg):
@@ -107,15 +107,6 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
         offs = len(mline) - len(text)
         macs, _ = db.get_macs_names()
         return [f'{s[offs:]} ' for s in macs if s.startswith(mline)]
-
-    def do_errors(self, arg):
-        msgs = db.get_syslog_entries(arg)
-        errors = get_errors_from_syslog_lines(msgs)
-        for error in errors:
-            print(error)
-
-    def complete_errors(self, text, line, begidx, endidx):
-        return self._complete_name_or_mac(text, line, begidx, endidx)
 
     def default(self, line):
         line = line.strip()
