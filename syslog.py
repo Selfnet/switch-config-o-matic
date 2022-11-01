@@ -1,5 +1,7 @@
 import re
 
+from utils import xml_to_keyvalue
+
 def get_time_from_syslog_line(line):
     time_contained = line.split(";")[0]
     time_ = re.match(r"<.*>(.*) HUAWEI", time_contained, re.DOTALL).groups()[0]
@@ -15,39 +17,38 @@ def parse_syslog_line_error(line):
 
     return f"ERROR: {tags[0]} | {error_msgs[0]}"
 
-def parse_syslog_line_ssh_disconnect(line):
-    msg = line.split(";")[1].split("(")[0]
-    reason = re.findall(r"(Reason=.*)\)", line)[0].strip()
-    return f"{msg} | {reason}"
-
-def get_errors_from_syslog_lines(lines):
-    errors = []
-    for line in lines:
-        try:
+def get_human_readable_syslog_messages(syslog_lines):
+    final_messages = []
+    for line in syslog_lines:
+        if "ssh" in line.lower() and "Body=)" in line:
+            continue
+        if ("OPS_RESTCONF" in line or "Body=)" in line or "IM_SUPPRESS_LOG" in line) \
+            and not "<errors>" in line and not "ssh" in line.lower():
+            continue
+        if "first-time-enable" in line:
+            continue
+        if "<errors>" in line:
             time_ = get_time_from_syslog_line(line)
-            if "<error>" in line:
-                errors.append(f"{time_} | {parse_syslog_line_error(line)}")
-            elif "SSHC_DISCONNECT" in line:
-                errors.append(f"{time_} | {parse_syslog_line_ssh_disconnect(line)}")
-        except:
-            errors.append(line)
+            line = f"{time_} | {parse_syslog_line_error(line)}"
 
-    if len(errors) == 0:
-        return ["No errors."]
+        line = re.sub(r"^<\d+>", "", line)
+        line = re.sub(r"HUAWEI.*; *", " | ", line, re.DOTALL)
+        line = re.sub(r"OPS operation information.", "", line)
+        line = re.sub(r"\(UserName=.*Body=", "", line, re.DOTALL)
+        line = re.sub(r"\(user=\"_autoconfig.py\", session=1\)", "", line)
+        line = re.sub(r"(ServiceType=sftp,)|(VPNInstanceName=_public_,)", "", line)
+        line = re.sub(r" +", " ", line)
 
-    return errors
+        if "\n" in line:
+            line = "; ".join([s.strip() for s in line.splitlines()])
+            line = line.replace(":;", ":")
 
-def get_infos_from_syslog_lines(lines):
-    infos = []
-    for line in lines:
-        try:
-            if "OPS_LOG_USERDEFINED_INFORMATION" in line:
-                time_ = get_time_from_syslog_line(line)
-                infos.append(f"{time_} | {parse_syslog_line_userdefined(line)}")
-        except:
-            infos.append(line)
+        if "</" in line:
+            time_ = line.split("|")[0].strip()
+            line = xml_to_keyvalue(line.split("|")[1].strip().replace(")", ""))
+            line = f"{time_} | {line}"
 
-    if len(infos) == 0:
-        return ["No log entries."]
+        final_messages.append(line)
 
-    return infos
+    return final_messages
+

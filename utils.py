@@ -1,6 +1,7 @@
 import re
 import os
 import logging
+from lxml import etree
 
 from config import LOG_FORMAT
 
@@ -22,3 +23,11 @@ def ensure_ztp_mac(mac):
     mac = mac.lower()
 
     return mac
+
+
+def xml_to_keyvalue(xml):
+    result = ""
+    root = etree.fromstring(xml)
+    result = ", ".join([f"{node.tag}={node.text}" for node in root.iter("*") if len(node) == 0])
+
+    return result

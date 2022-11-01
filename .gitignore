@@ -2,6 +2,7 @@
 *.sqlite
 *configs*
 log.txt
+debug.py
 
 # Created by https://www.toptal.com/developers/gitignore/api/visualstudiocode,python,venv
 # Edit at https://www.toptal.com/developers/gitignore?templates=visualstudiocode,python,venv
