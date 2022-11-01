@@ -20,7 +20,8 @@ class SwitchStatus(enum.Enum):
     CREATED = 0
     NAMED = 1
     DHCP_SUCCESS = 2
-    FINISNED = 3
+    REBOOTING = 3
+    FINISNED = 4
     ERROR = 100
 
     def __lt__(self, other):

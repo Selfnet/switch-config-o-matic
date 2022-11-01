@@ -18,6 +18,19 @@ async def ip_responds_to_ping_async(host):
 async def main():
     while True:
         with db.Session() as session:
+            # Check for successful config retrieval
+            switches = session.query(Switch) \
+                .filter(Switch.status == SwitchStatus.DHCP_SUCCESS) \
+                .all()
+
+            download_success = "Download file successfully."
+            rebooting = "After 0 seconds activation will be performed."
+
+            for sw in switches:
+                if download_success in sw.syslog_entries and rebooting in sw.syslog_entries:
+                    sw.status = SwitchStatus.REBOOTING
+                    session.commit()
+
             switches = session.query(Switch) \
                 .filter(Switch.status != SwitchStatus.FINISNED) \
                 .filter(Switch.name != None) \
