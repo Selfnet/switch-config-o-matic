@@ -98,12 +98,12 @@ def get_macs_names():
     return macs, names
 
 def _fill_final_ip(switch):
-    ip = config_parsing.get_ip(switch.name)
+    ip, _ = config_parsing.get_ip_and_network_port_1(switch.name)
     if ip is None:
         print("Warning: Switch has no IP assigned on port 1.\n" + \
               "It will not be possible to check when ZTP is finished.\n" + \
               "Please observe this switch manually.")
-    switch.final_ip = ip
+    switch.final_ip = ip.exploded
 
 def name_switch(mac, name):
     mac = ensure_ztp_mac(mac)

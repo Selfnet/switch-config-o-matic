@@ -27,7 +27,8 @@ async def main():
             rebooting = "After 0 seconds activation will be performed."
 
             for sw in switches:
-                if download_success in sw.syslog_entries and rebooting in sw.syslog_entries:
+                if any(download_success in le.msg for le in sw.syslog_entries) \
+                    and any(rebooting in le.msg for le in sw.syslog_entries):
                     sw.status = SwitchStatus.REBOOTING
                     session.commit()
 

@@ -162,6 +162,8 @@ def main():
     python_exec = os.path.realpath(shutil.which("python"))
     print(python_exec)
 
+    subprocess.call(["python", "add_ips.py"])
+
     # Temporarily allow the two python processes to access privileged ports without root,
     # so that we can terminate these processes afterwards
     subprocess.call(["sudo", "setcap", "cap_net_bind_service=+ep", python_exec])
