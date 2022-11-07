@@ -81,7 +81,34 @@ def render_text(text, mac, mac_qr, add_selfnet_s) :
     
     return imgsurf
 
+def render_small_label(text) :
+    recsurf = cairo.RecordingSurface(cairo.Content.COLOR_ALPHA, None)
+
+    ctx = cairo.Context(recsurf)
+    ctx.translate(0,0)
+    opts = cairo.FontOptions()
+    opts.set_antialias(cairo.ANTIALIAS_NONE)
+    layout = PangoCairo.create_layout(ctx)
+    PangoCairo.context_set_font_options(layout.get_context(), opts)
+    font = Pango.FontDescription("Cantarell Bold 28")
+    layout.set_font_description(font)
+    layout.set_text(text)
+    ctx.set_source_rgb(0, 0, 0)
+    ctx.move_to(0,20)
+    PangoCairo.show_layout(ctx, layout)
+    
+    x0, y0, width, height = recsurf.ink_extents()
+    imgsurf = cairo.ImageSurface(cairo.Format.RGB24, int(x0+width), max(int(y0+height), 128))
+    ctx = cairo.Context(imgsurf)
+    ctx.set_source_rgb(1,1,1)
+    ctx.paint()
+    ctx.set_source_surface(recsurf)
+    ctx.paint()
+    
+    return imgsurf
+
 if __name__ == "__main__" :
-    imgsurf = render_text("asdf", "68:f7:28:77:e5:1d".replace(":", ""),  True)
+    #imgsurf = render_text("asdf", "68:f7:28:77:e5:1d".replace(":", ""),  True)
+    imgsurf = render_small_label("ross1-117-010-1")
     #imgsurf = render_text("asdf", None,  False)
     imgsurf.write_to_png("out.png")
