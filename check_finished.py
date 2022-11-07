@@ -5,6 +5,8 @@ import time
 
 import config
 import db
+import labelprinter.draw
+import labelprinter.printer
 from db import Switch, SwitchStatus
 
 async def ip_responds_to_ping_async(host):
@@ -45,6 +47,9 @@ async def main():
                 if ping_successful:
                     switch.status = SwitchStatus.FINISNED
                     session.commit()
+
+                    imgsurf = labelprinter.draw.render_small_label(switch.name)
+                    labelprinter.printer.print_to_ip(imgsurf, config.labelprinter_hostname)
 
             time.sleep(10)
 
