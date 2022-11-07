@@ -14,13 +14,16 @@ def configure_logging():
 
 
 def ensure_ztp_mac(mac):
-    if not ":" in mac:
-        mac = ":".join(re.findall("..", mac))
+    mac = mac.replace(":", "")
+    mac = ":".join(re.findall("..", mac))
 
     # The code contains the management interface's MAC which ends on a zero
     # The ZTP MAC ends on a one. Set that here:
     mac = mac[:-1] + "3"
     mac = mac.lower()
+
+    if not mac_regex.match(mac):
+        raise ValueError("Invalid MAC address")
 
     return mac
 

@@ -2,13 +2,15 @@ import re
 import os
 import cmd
 import sys
-
-import db
 import subprocess
 import logging
 import shutil
 from concurrent.futures import ThreadPoolExecutor
 
+import db
+import config
+import labelprinter.draw
+import labelprinter.printer
 from dhcp import DhcpServer
 from db import create_scoped_session, Switch
 from utils import mac_regex, configure_logging
@@ -98,9 +100,16 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
     def do_name(self, arg):
         args = arg.split()
         if len(args) == 1:
-            db.name_last_added_switch(args[0])
+            name = args[0]
+            db.name_last_added_switch(name)
         elif len(args) == 2:
+            name = args[1]
             db.name_switch(args[0], args[1])
+
+        switch = db.query_name(name)
+
+        imgsurf = labelprinter.draw.render_text(switch.name, switch.mac, switch.mac, add_selfnet_s=True)
+        labelprinter.printer.print_to_ip(imgsurf, config.labelprinter_hostname)
 
     def complete_name(self, text, line, begidx, endidx):
         mline = line.partition(' ')[2]

@@ -1,3 +1,6 @@
+# You also have to install the python-gobject system package and create the venv with 'python -m venv --system-site-packages venv'
 greenlet
 lxml
 SQLAlchemy
+qrcode
+pycairo

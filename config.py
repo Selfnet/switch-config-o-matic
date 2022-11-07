@@ -16,3 +16,5 @@ sftp_port = 2222
 switch_config_dir = "switch_configs"
 
 dhcp_reload_interval_sec = 10
+
+labelprinter_hostname = 'labelprinter-2.workstation.selfnet.de'
