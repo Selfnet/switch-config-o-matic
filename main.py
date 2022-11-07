@@ -108,8 +108,8 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
 
         switch = db.query_name(name)
 
-        imgsurf = labelprinter.draw.render_text(switch.name, switch.mac, switch.mac, add_selfnet_s=True)
         try:
+            imgsurf = labelprinter.draw.render_text(switch.name, switch.mac, switch.mac, add_selfnet_s=True)
             labelprinter.printer.print_to_ip(imgsurf, config.labelprinter_hostname)
         except Exception as e:
             print(f"Printing qr-label failed for {switch.name}: {e}")
