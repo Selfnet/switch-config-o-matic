@@ -35,7 +35,7 @@ def get_human_readable_syslog_messages(syslog_lines):
         line = re.sub(r"HUAWEI.*; *", " | ", line, re.DOTALL)
         line = re.sub(r"OPS operation information.", "", line)
         line = re.sub(r"\(UserName=.*Body=", "", line, re.DOTALL)
-        line = re.sub(r"\(user=\"_autoconfig.py\", session=1\)", "", line)
+        line = re.sub(r"\(user=\"_autoconfig.py\", session=\d*\)", "", line)
         line = re.sub(r"(ServiceType=sftp,)|(VPNInstanceName=_public_,)", "", line)
         line = re.sub(r" +", " ", line)
 
