@@ -109,11 +109,13 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
         switch = db.query_name(name)
 
         try:
+            print(f"Printing label for {switch.name}...")
             imgsurf = labelprinter.draw.render_text(switch.name, switch.mac, switch.mac, add_selfnet_s=True)
             labelprinter.printer.print_to_ip(imgsurf, config.labelprinter_hostname)
+            print(f"Printed label for {switch.name}.")
         except Exception as e:
             print(f"Printing qr-label failed for {switch.name}: {e}")
-            print(f"Fix the printer, execute the previous name command again and ignore the 'already named' error.")
+            print("Fix the printer, execute the previous name command again and ignore the 'already named' error.")
 
     def complete_name(self, text, line, begidx, endidx):
         mline = line.partition(' ')[2]
@@ -175,6 +177,16 @@ def main():
     python_exec = os.path.realpath(shutil.which("python"))
     print(python_exec)
 
+    subprocess.call([
+        "docker", "run", "--name", "sftp_server", "--rm",
+        "-v", f"{os.path.abspath(config.switch_config_dir)}:/home/switch",
+        "-p", f"{config.sftp_port}:22",
+        "-d", "atmoz/sftp",
+        f"{config.sftp_user}:{config.sftp_pass}:1000:1000"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+
     subprocess.call(["python", "add_ips.py"])
 
     # Temporarily allow the two python processes to access privileged ports without root,
@@ -193,8 +205,10 @@ def main():
     syslog_process.terminate()
     dhcp_process.terminate()
     ping_process.terminate()
+    subprocess.call(["docker", "stop", "sftp_server"],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL)
 
 
 if __name__ == "__main__":
     main()
-
