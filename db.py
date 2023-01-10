@@ -67,8 +67,6 @@ def get_next_ip():
         used_ips = [sw.ztp_ip for sw in session.query(Switch.ztp_ip).all()]
     used_ips.append(ztp_interface_ip)
 
-    print(used_ips)
-
     for ip in ztp_network.hosts():
         if not ip.exploded in used_ips:
             return ip.exploded

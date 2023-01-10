@@ -1,21 +1,17 @@
-import re
 import os
 import cmd
 import sys
 import subprocess
 import logging
 import shutil
-from concurrent.futures import ThreadPoolExecutor
 
 import db
 import config
 import labelprinter.draw
 import labelprinter.printer
-from dhcp import DhcpServer
 from db import create_scoped_session, Switch
 from utils import mac_regex, configure_logging
-from syslog_server import SyslogServer
-from syslog import get_human_readable_syslog_messages
+from huawei_syslog import get_human_readable_syslog_messages
 
 Session = create_scoped_session()
 configure_logging()
@@ -174,15 +170,12 @@ def main():
     logging.info("     --------------- START switch-config-o-matic ---------------")
     db.init_db()
 
-    python_exec = os.path.realpath(shutil.which("python"))
-    print(python_exec)
-
     subprocess.call([
         "docker", "run", "--name", "sftp_server", "--rm",
         "-v", f"{os.path.abspath(config.switch_config_dir)}:/home/switch",
         "-p", f"{config.sftp_port}:22",
         "-d", "atmoz/sftp",
-        f"{config.sftp_user}:{config.sftp_pass}:1000:1000"],
+        f"{config.sftp_user}:{config.sftp_pass}:{os.getuid()}:{os.getuid()}"],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
@@ -191,6 +184,7 @@ def main():
 
     # Temporarily allow the two python processes to access privileged ports without root,
     # so that we can terminate these processes afterwards
+    python_exec = os.path.realpath(shutil.which("python"))
     subprocess.call(["sudo", "setcap", "cap_net_bind_service=+ep", python_exec])
 
     syslog_process = subprocess.Popen(["python", "syslog_server.py"])
