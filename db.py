@@ -1,4 +1,3 @@
-import re
 import enum
 import config_parsing
 from utils import mac_regex, ensure_ztp_mac
@@ -98,8 +97,8 @@ def get_macs_names():
 def _fill_final_ip(switch):
     ip, _ = config_parsing.get_ip_and_network_port_1(switch.name)
     if ip is None:
-        print("Warning: Switch has no IP assigned on port 1.\n" + \
-              "It will not be possible to check when ZTP is finished.\n" + \
+        print("Warning: Switch has no IP assigned on port 1.\n" +
+              "It will not be possible to check when ZTP is finished.\n" +
               "Please observe this switch manually.")
     switch.final_ip = ip.exploded
 
@@ -107,7 +106,7 @@ def name_switch(mac, name):
     mac = ensure_ztp_mac(mac)
     with Session() as session:
         sw = session.query(Switch).filter(Switch.mac == mac).one()
-        if sw.name != None:
+        if sw.name is not None:
             print(f'Error: Switch {mac} already named {sw.name}')
             return
         sw.name = name
@@ -124,7 +123,7 @@ def query_all_unfinished_switches():
     with Session() as session:
         return session.query(Switch) \
             .filter(Switch.status != SwitchStatus.FINISNED) \
-            .filter(Switch.name != None) \
+            .filter(Switch.name is not None) \
             .all()
 
 def get_syslog_entries(mac_or_name):
