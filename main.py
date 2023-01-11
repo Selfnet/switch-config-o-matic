@@ -7,6 +7,7 @@ import shutil
 
 import db
 import config
+import readline
 import labelprinter.draw
 import labelprinter.printer
 from db import create_scoped_session, Switch
@@ -23,6 +24,7 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
     def __init__(self):
         cmd.Cmd.__init__(self)
         self.exit_requested = False
+        self.histfile = ".cmd_history"
 
     def do_add(self, arg):
         arg = arg.strip()
@@ -164,6 +166,14 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
                 sys.stdout.write('\n')
             except Exception as e:
                 print(e)
+
+    def preloop(self):
+        if os.path.exists(self.histfile):
+            readline.read_history_file(self.histfile)
+
+    def postloop(self):
+        readline.set_history_length(-1)
+        readline.write_history_file(self.histfile)
 
 
 def main():
