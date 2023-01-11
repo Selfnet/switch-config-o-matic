@@ -23,11 +23,14 @@ def _read_config_lines(switch_name):
 def get_ip_and_network_port_1(switch_name):
     config_lines = _read_config_lines(switch_name)
     for i in range(len(config_lines)):
-        if config_lines[i] == "interface MultiGE1/0/1" and not config_lines[i+1].startswith("interface"):
-            search_area = " ".join(config_lines[i:i+50])
-            match = re.search(r"ip address (?P<ip>\d+.\d+.\d+.\d+) (?P<netmask>\d+.\d+.\d+.\d+)", search_area)
-            ip = match.group("ip")
-            netmask = match.group("netmask")
-            return ip_address(ip), ip_network(f"{ip}/{netmask}", strict=False)
+        try:
+            if config_lines[i] == "interface MultiGE1/0/1" and not config_lines[i+1].startswith("interface"):
+                search_area = " ".join(config_lines[i:i+50])
+                match = re.search(r"ip address (?P<ip>\d+.\d+.\d+.\d+) (?P<netmask>\d+.\d+.\d+.\d+)", search_area)
+                ip = match.group("ip")
+                netmask = match.group("netmask")
+                return ip_address(ip), ip_network(f"{ip}/{netmask}", strict=False)
+        except:
+            continue
 
     return None, None
