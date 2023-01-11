@@ -21,5 +21,16 @@ The purpose of this script is to automate and parallelize setting up Huawei swit
 - Type the `add` command in the shell
 - Scan the MAC address code on the back of the switch
 - Type the `name switch_name` command to name the last added switch "switch_name".
+- Get the printed working-label from the label printer and put it on top of the switch or whereever you like.
 - Type `l` to list the switches with their status
 - Type `log switch_name` command to see the (sys)log of the switch "switch_name".
+- When the process is finished, get the final small label from the label printer and put it on the front panel of the switch (eg. on the very right).
+
+## Statuses the switch can be in
+|Name|Meaning|
+|----|-------|
+|CREATED|The switch was added to the database with its MAC and has to be named next.|
+|NAMED|You have said which switch this is. The switch was added to the DHCP server config and we now wait for the switch to request an IP address (this can take up to 15min).|
+|DHCP_SUCCESS|The switch has requested an IP address from the DHCP server and is trying to enter the ZTP procedure by getting its config from the SFTP server. If the status is stuck here, please see the log for errors.|
+|REBOOTING|The ZTP process was successfull and the switch it reboots itself. The switch will stay in this status until we can ping it at the IP address assigned to port 1 in the config.|
+|FINISNED|We can ping the switch. This way we have verified, that the config works correctly. The switch can now be disconnected. A small label with a QR code will be printed now. |
