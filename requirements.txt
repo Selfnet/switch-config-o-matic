@@ -3,6 +3,8 @@ greenlet
 lxml
 SQLAlchemy
 qrcode
+Pillow
 pycairo
+PyGObject
 readline
 
