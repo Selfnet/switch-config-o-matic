@@ -180,8 +180,12 @@ def main():
     logging.info("     --------------- START switch-config-o-matic ---------------")
     db.init_db()
 
+    sftp_dir = os.path.abspath(config.switch_config_dir)
+    if not os.path.exists(sftp_dir):
+        os.makedirs(sftp_dir)  # podman does not auto-create volume mounts
+
     subprocess.call([
-        "docker", "run", "--name", "sftp_server", "--rm",
+        config.container_engine, "run", "--name", "sftp_server", "--rm",
         "-v", f"{os.path.abspath(config.switch_config_dir)}:/home/switch",
         "-p", f"{config.sftp_port}:22",
         "-d", "atmoz/sftp",
@@ -209,7 +213,7 @@ def main():
     syslog_process.terminate()
     dhcp_process.terminate()
     ping_process.terminate()
-    subprocess.call(["docker", "stop", "sftp_server"],
+    subprocess.call([config.container_engine, "stop", "sftp_server"],
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL)
 

@@ -3,7 +3,7 @@ The purpose of this script is to automate and parallelize setting up Huawei swit
 
 ## Installation and setup
 - Clone the repository
-- Install the required system packages: dnsmasq, docker
+- Install the required system packages: dnsmasq, docker/podman (adapt config.container_engine if necessary)
 - Install the `python-gobject` system package on Arch-based distros or `python3-gi` on Debian-based distros
 - Create a venv that includes system packages (we need `python-gobject`):
   `python -m venv --system-site-packages venv`

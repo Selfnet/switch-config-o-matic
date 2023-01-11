@@ -5,6 +5,9 @@ ztp_interface = "eth0"
 switch_config_dir = "switch_configs"
 labelprinter_hostname = 'labelprinter-2.workstation.selfnet.de'
 
+# The binary to be executed. Supported values are docker and podman
+container_engine = "docker"
+
 # Other options
 LOG_FORMAT = "%(asctime)s | %(filename)s | %(levelname)s | %(thread)d: %(message)s"
 
