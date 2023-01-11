@@ -88,7 +88,7 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
                 print(msg)
 
     def help_log(self):
-        return "Syntax: syslog [-v] name_or_mac"
+        return "Syntax: log [-v] name_or_mac"
 
     def complete_log(self, text, line, begidx, endidx):
         return self._complete_name_or_mac(text, line, begidx, endidx)

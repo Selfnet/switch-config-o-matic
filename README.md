@@ -14,3 +14,12 @@ The purpose of this script is to automate and parallelize setting up Huawei swit
 - Copy masterkey.ini to this folder and insert the actual master key into the file
 - Adjust config.py to fit your system (especially `ztp_interface`)
 - Start the switch-config-o-matic shell: `python main.py`
+- Type `help` to get help on the available commands
+
+## How to start the ZTP process for a switch
+- Connect **front-panel port 1** of the target huawei switch to your system
+- Type the `add` command in the shell
+- Scan the MAC address code on the back of the switch
+- Type the `name switch_name` command to name the last added switch "switch_name".
+- Type `l` to list the switches with their status
+- Type `log switch_name` command to see the (sys)log of the switch "switch_name".
