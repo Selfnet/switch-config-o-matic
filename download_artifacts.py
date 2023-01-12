@@ -51,7 +51,7 @@ def main():
         description="Download artifacts from scheduled jobs",
     )
     parser.add_argument("--token", required=True, help="GitLab Access Token (requires API read access)")
-    parser.add_argument("-o", "--output", type=os.path.abspath, default="artifacts.zip", help="GitLab Access Token (requires API read access)")
+    parser.add_argument("-o", "--output", type=os.path.abspath, default="artifacts.zip", help="Output filename of the artifacts zip file")
     args = parser.parse_args()
     download_artifacts(project="support/siam", job_name="build_switch_configs_huawei", output=args.output, token=args.token)
 
