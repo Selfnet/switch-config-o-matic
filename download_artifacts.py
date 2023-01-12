@@ -19,10 +19,16 @@ class Gitlab():
         return res
 
 
-def download_artifacts(project: str | int, schedule_id: str | int, job_name: str, output: str, token: str):
+def download_artifacts(project: str | int, job_name: str, output: str, token: str):
     encoded_project = urllib.parse.quote(str(project), safe="")
     gitlab = Gitlab("https://git.selfnet.de", token)
-    last_scheduled_pipelines = gitlab.get(f"projects/{encoded_project}/pipeline_schedules/{schedule_id}/pipelines", params={"per_page": 1})
+    last_scheduled_pipelines = gitlab.get(f"projects/{encoded_project}/pipelines", params={
+        "pagination": "keyset",
+        "per_page": 1,
+        "order_by": "id",
+        "sort": "desc",
+        "ref": "generate-all-huawei-configs",
+    })
     if len(last_scheduled_pipelines) == 0:
         raise Exception("No pipelines have been run for specified schedule")
     last_pipeline_id = last_scheduled_pipelines[0]["id"]
@@ -47,7 +53,7 @@ def main():
     parser.add_argument("--token", required=True, help="GitLab Access Token (requires API read access)")
     parser.add_argument("-o", "--output", type=os.path.abspath, default="artifacts.zip", help="GitLab Access Token (requires API read access)")
     args = parser.parse_args()
-    download_artifacts(project="support/siam", schedule_id=16, job_name="build_switch_configs_huawei", output=args.output, token=args.token)
+    download_artifacts(project="support/siam", job_name="build_switch_configs_huawei", output=args.output, token=args.token)
 
 
 if __name__ == "__main__":
