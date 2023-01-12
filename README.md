@@ -34,3 +34,7 @@ The purpose of this script is to automate and parallelize setting up Huawei swit
 |DHCP_SUCCESS|The switch has requested an IP address from the DHCP server and is trying to enter the ZTP procedure by getting its config from the SFTP server. If the status is stuck here, please see the log for errors.|
 |REBOOTING|The ZTP process was successfull and the switch it reboots itself. The switch will stay in this status until we can ping it at the IP address assigned to port 1 in the config.|
 |FINISNED|We can ping the switch. This way we have verified, that the config works correctly. The switch can now be disconnected. A small label with a QR code will be printed now. |
+
+## Download switch configs programmatically
+
+To download all switch configs from the latest GitLab pipeline programmatically, simply run `python3 download_artifacts.py --token YOUR_TOKEN`. The token can be created on GitLab and only requires `read_api` access. Notice that running this script requires the python `requests` module to be installed.
