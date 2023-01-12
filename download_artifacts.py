@@ -19,7 +19,7 @@ class Gitlab():
         return res
 
 
-def download_artifacts(project: str | int, job_name: str, output: str, token: str):
+def download_artifacts(project: str | int, branch_name: str, job_name: str, output: str, token: str):
     encoded_project = urllib.parse.quote(str(project), safe="")
     gitlab = Gitlab("https://git.selfnet.de", token)
     last_scheduled_pipelines = gitlab.get(f"projects/{encoded_project}/pipelines", params={
@@ -27,7 +27,7 @@ def download_artifacts(project: str | int, job_name: str, output: str, token: st
         "per_page": 1,
         "order_by": "id",
         "sort": "desc",
-        "ref": "generate-all-huawei-configs",
+        "ref": branch_name,
     })
     if len(last_scheduled_pipelines) == 0:
         raise Exception("No pipelines have been run for specified schedule")
@@ -53,7 +53,7 @@ def main():
     parser.add_argument("--token", required=True, help="GitLab Access Token (requires API read access)")
     parser.add_argument("-o", "--output", type=os.path.abspath, default="artifacts.zip", help="Output filename of the artifacts zip file")
     args = parser.parse_args()
-    download_artifacts(project="support/siam", job_name="build_switch_configs_huawei", output=args.output, token=args.token)
+    download_artifacts(project="support/siam", branch_name="main", job_name="build_switch_configs_huawei", output=args.output, token=args.token)
 
 
 if __name__ == "__main__":
