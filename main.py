@@ -4,12 +4,14 @@ import sys
 import subprocess
 import logging
 import shutil
+import glob
 
 import db
 import config
 import readline
 import labelprinter.draw
 import labelprinter.printer
+from playsound import playsound
 from db import create_scoped_session, Switch
 from utils import mac_regex, configure_logging
 from huawei_syslog import get_human_readable_syslog_messages
@@ -26,7 +28,7 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
         self.exit_requested = False
         self.histfile = ".cmd_history"
 
-    def do_add(self, arg):
+    def do_addonly(self, arg):
         arg = arg.strip()
         if not mac_regex.match(arg):
             print(f'ERROR: Invalid MAC address "{arg}"')
@@ -39,6 +41,39 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
         db.add_switch(arg)
 
         print(f'Added {arg}')
+
+    def do_add(self, _):
+        while True:
+            mac = input("MAC: ")
+            if not mac_regex.match(mac):
+                print(f"'{mac}' is not a valid MAC address.")
+                playsound("audio/mac_failure.ogg", block=False)
+                continue
+
+            try:
+                db.add_switch(mac)
+                playsound("audio/mac_success.ogg", block=False)
+                break
+            except Exception as e:
+                print(e)
+                playsound("audio/mac_failure.ogg", block=False)
+
+        while True:
+            name = input("Name: ")
+            if len(name) == 0 or len(glob.glob(f"{config.switch_config_dir}/{name}*")) == 0:
+                print(f"Switch config for switch '{name}' not found in {config.switch_config_dir}")
+                playsound("audio/name_failure.ogg", block=False)
+                continue
+
+            try:
+                db.name_switch(mac, name)
+                playsound("audio/name_success.ogg", block=False)
+                break
+            except Exception as e:
+                print(e)
+                playsound("audio/name_failure.ogg")
+
+        print(f'Added {name} ({mac})')
 
     def do_status(self, arg):
         arg = arg.strip()
@@ -127,8 +162,6 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
             mac = line
             if db.query_mac(mac):
                 self.do_status(mac)
-            else:
-                self.do_add(mac)
         else:
             print(f'ERROR: Unknown syntax: {line}')
 

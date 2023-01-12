@@ -100,6 +100,7 @@ def _fill_final_ip(switch):
         print("Warning: Switch has no IP assigned on port 1.\n" +
               "It will not be possible to check when ZTP is finished.\n" +
               "Please observe this switch manually.")
+        return
     switch.final_ip = ip.exploded
 
 def name_switch(mac, name):
