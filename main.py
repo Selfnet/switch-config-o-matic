@@ -156,6 +156,12 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
         macs, _ = db.get_macs_names()
         return [f'{s[offs:]} ' for s in macs if s.startswith(mline)]
 
+    def do_rm(self, arg):
+        db.remove_switch(arg)
+
+    def complete_rm(self, text, line, begidx, endidx):
+        return self._complete_name_or_mac(text, line, begidx, endidx)
+
     def default(self, line):
         line = line.strip()
         if mac_regex.match(line):

@@ -6,3 +6,4 @@ Pillow
 pycairo
 PyGObject
 readline
+playsound

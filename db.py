@@ -106,6 +106,10 @@ def _fill_final_ip(switch):
 def name_switch(mac, name):
     mac = ensure_ztp_mac(mac)
     with Session() as session:
+        existing = session.query(Switch).filter(Switch.name == name).all()
+        if (len(existing) > 0):
+            raise ValueError(f'Name {name} already used by switch {existing[0].mac}')
+
         sw = session.query(Switch).filter(Switch.mac == mac).one()
         if sw.name is not None:
             print(f'Error: Switch {mac} already named {sw.name}')
@@ -136,3 +140,14 @@ def get_syslog_entries(mac_or_name):
             switch = session.query(Switch).filter(Switch.name == mac_or_name).one()
 
         return [le.msg for le in switch.syslog_entries]
+
+def remove_switch(mac_or_name):
+    with Session() as session:
+        if mac_regex.match(mac_or_name):
+            mac = ensure_ztp_mac(mac_or_name)
+            switch = session.query(Switch).filter(Switch.mac == mac).one()
+        else:
+            switch = session.query(Switch).filter(Switch.name == mac_or_name).one()
+
+        session.delete(switch)
+        session.commit()
