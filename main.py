@@ -68,6 +68,7 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
             try:
                 db.name_switch(mac, name)
                 playsound("audio/name_success.ogg", block=False)
+                self.do_print(name)
                 break
             except Exception as e:
                 print(e)
@@ -100,6 +101,18 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
         macs, names = db.get_macs_names()
         identifiers = macs + names
         return [f'{s[offs:]} ' for s in identifiers if s.startswith(mline)]
+
+    def do_print(self, arg):
+        name = arg.strip()
+        switch = db.query_name(name)
+        try:
+            print(f"Printing label for {switch.name}...")
+            imgsurf = labelprinter.draw.render_text(switch.name, switch.mac, switch.mac, add_selfnet_s=True)
+            labelprinter.printer.print_to_ip(imgsurf, config.labelprinter_hostname)
+            print(f"Printed label for {switch.name}.")
+        except Exception as e:
+            print(f"Printing qr-label failed for {switch.name}: {e}")
+            print("Fix the printer, execute the previous name command again and ignore the 'already named' error.")
 
     def complete_status(self, text, line, begidx, endidx):
         self._complete_name_or_mac(text, line, begidx, endidx)
@@ -139,16 +152,7 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
             name = args[1]
             db.name_switch(args[0], args[1])
 
-        switch = db.query_name(name)
-
-        try:
-            print(f"Printing label for {switch.name}...")
-            imgsurf = labelprinter.draw.render_text(switch.name, switch.mac, switch.mac, add_selfnet_s=True)
-            labelprinter.printer.print_to_ip(imgsurf, config.labelprinter_hostname)
-            print(f"Printed label for {switch.name}.")
-        except Exception as e:
-            print(f"Printing qr-label failed for {switch.name}: {e}")
-            print("Fix the printer, execute the previous name command again and ignore the 'already named' error.")
+        self.do_print(name)
 
     def complete_name(self, text, line, begidx, endidx):
         mline = line.partition(' ')[2]
