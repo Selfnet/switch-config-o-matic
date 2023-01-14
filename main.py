@@ -127,6 +127,16 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
             print(f"Printing qr-label failed for {switch.name}: {e}")
             print("Fix the printer, execute the previous name command again and ignore the 'already named' error.")
 
+    def do_print_small_label(self, arg):
+        name = arg.strip()
+        switch = db.query_name(name)
+        try:
+            print(f"Printing qr-label failed for {switch.name}...")
+            imgsurf = labelprinter.draw.render_small_label(switch.name)
+            labelprinter.printer.print_to_ip(imgsurf, config.labelprinter_hostname)
+        except Exception as e:
+            print(f"Printing qr-label failed for {switch.name}: {e}. Please fix the printer.")
+
     def complete_status(self, text, line, begidx, endidx):
         self._complete_name_or_mac(text, line, begidx, endidx)
 
