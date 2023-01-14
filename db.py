@@ -151,3 +151,15 @@ def remove_switch(mac_or_name):
 
         session.delete(switch)
         session.commit()
+
+
+def set_status(mac_or_name, status: str):
+    with Session() as session:
+        if mac_regex.match(mac_or_name):
+            mac = ensure_ztp_mac(mac_or_name)
+            switch = session.query(Switch).filter(Switch.mac == mac).one()
+        else:
+            switch = session.query(Switch).filter(Switch.name == mac_or_name).one()
+
+        switch.status = SwitchStatus[status.upper()]
+        session.commit()

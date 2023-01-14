@@ -95,6 +95,19 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
         else:
             print(switch)
 
+    def do_set_status(self, arg):
+        mac_or_name, status = arg.strip().split(" ")
+        db.set_status(mac_or_name, status)
+
+    def complete_set_status(self, text, line, begidx, endidx):
+        # Complete mac_or_name as well as status which can be every value of db.SwitchStatus
+        if len(line.split(" ")) < 3:
+            return self._complete_name_or_mac(text, line, begidx, endidx)
+        else:
+            mline = line.split(" ")[-1]
+            offs = len(mline) - len(text)
+            return [f'{s.name[offs:]} ' for s in db.SwitchStatus if s.name.startswith(mline)]
+
     def _complete_name_or_mac(self, text, line, begidx, endidx):
         mline = line.partition(' ')[2]
         offs = len(mline) - len(text)
