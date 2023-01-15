@@ -1,8 +1,9 @@
 import enum
+import datetime
 import config_parsing
 from utils import mac_regex, ensure_ztp_mac
 from config import db_url, ztp_network, ztp_interface_ip
-from sqlalchemy import create_engine, Column, Integer, String, Enum, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, Enum, ForeignKey, DateTime
 from sqlalchemy.orm import declarative_base, sessionmaker, scoped_session, relationship
 
 Base = declarative_base()
@@ -20,7 +21,7 @@ class SwitchStatus(enum.Enum):
     NAMED = 1
     DHCP_SUCCESS = 2
     REBOOTING = 3
-    FINISNED = 4
+    FINISHED = 4
     ERROR = 100
 
     def __lt__(self, other):
@@ -42,6 +43,7 @@ class Switch(Base):
     status = Column(Enum(SwitchStatus), default=SwitchStatus.CREATED)
     ztp_ip = Column(String)
     final_ip = Column(String)  # The IP of service port 1 which is assigned by the config file
+    finished_date = Column(DateTime, default="1970-01-01 00:00:00")
 
     def __repr__(self):
         return f'<MAC="{self.mac}", NAME="{self.name}", STATUS="{self.status.name}", ' + \
@@ -127,7 +129,7 @@ def name_last_added_switch(name):
 def query_all_unfinished_switches():
     with Session() as session:
         return session.query(Switch) \
-            .filter(Switch.status != SwitchStatus.FINISNED) \
+            .filter(Switch.status != SwitchStatus.FINISHED) \
             .filter(Switch.name is not None) \
             .all()
 
@@ -162,4 +164,8 @@ def set_status(mac_or_name, status: str):
             switch = session.query(Switch).filter(Switch.name == mac_or_name).one()
 
         switch.status = SwitchStatus[status.upper()]
+
+        if switch.status == SwitchStatus.FINISHED:
+            switch.finished_date = datetime.now()
+
         session.commit()

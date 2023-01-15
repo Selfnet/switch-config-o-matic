@@ -1,6 +1,5 @@
 import asyncio
-import platform
-import subprocess
+import datetime
 import time
 
 import config
@@ -35,7 +34,7 @@ async def main():
                     session.commit()
 
             switches = session.query(Switch) \
-                .filter(Switch.status != SwitchStatus.FINISNED) \
+                .filter(Switch.status != SwitchStatus.FINISHED) \
                 .filter(Switch.name != None) \
                 .filter(Switch.final_ip != None) \
                 .all()
@@ -54,7 +53,8 @@ async def main():
                         print("Trying again on the next ping iteration...")
                         continue
 
-                    switch.status = SwitchStatus.FINISNED
+                    switch.status = SwitchStatus.FINISHED
+                    switch.finished_date = datetime.datetime.now()
                     session.commit()
 
             time.sleep(10)
