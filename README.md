@@ -10,6 +10,7 @@ The purpose of this script is to automate and parallelize setting up Huawei swit
 - Download the huawei configs for the switches (eg. trigger a pipeline in https://git.selfnet.de/support/siam/-/tree/generate-all-huawei-configs and download the build_switch_configs artifacts)
 - Put them in a folder within this repo (eg. switch_configs)
 - Copy masterkey.ini to this folder and insert the actual master key into the file
+  > Warning: The masterkey.ini file does not support indentation
 - Adjust config.py to fit your system (especially `ztp_interface`)
 - Start the switch-config-o-matic shell: `python main.py`
 - Type `help` to get help on the available commands
