@@ -9,6 +9,7 @@ import glob
 import db
 import config
 import readline
+import sysctl
 import labelprinter.draw
 import labelprinter.printer
 from playsound import playsound
@@ -246,6 +247,9 @@ def main():
     logging.info("     --------------- START switch-config-o-matic ---------------")
     db.init_db()
 
+    sysctl.store_original_values()
+    sysctl.set_target_values()
+
     sftp_dir = os.path.abspath(config.switch_config_dir)
     if not os.path.exists(sftp_dir):
         os.makedirs(sftp_dir)  # podman does not auto-create volume mounts
@@ -282,6 +286,7 @@ def main():
     subprocess.call([config.container_engine, "stop", "sftp_server"],
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL)
+    sysctl.restore_original_values()
 
 
 if __name__ == "__main__":
