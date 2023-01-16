@@ -43,7 +43,7 @@ class Switch(Base):
     status = Column(Enum(SwitchStatus), default=SwitchStatus.CREATED)
     ztp_ip = Column(String)
     final_ip = Column(String)  # The IP of service port 1 which is assigned by the config file
-    finished_date = Column(DateTime, default="1970-01-01 00:00:00")
+    finished_date = Column(DateTime)
 
     def __repr__(self):
         return f'<MAC="{self.mac}", NAME="{self.name}", STATUS="{self.status.name}", ' + \
