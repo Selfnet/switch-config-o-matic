@@ -1,0 +1,14 @@
+[Unit]
+Description=Automatic Switch Artifacts Update
+
+[Timer]
+OnBootSec=5min
+OnActiveSec=10min
+RandomizedDelaySec=5min
+Persistent=True
+OnCalendar=*-*-* 20:00:00
+Unit=switch_artifacts.service
+WakeSystem=False
+
+[Install]
+WantedBy=multi-user.target

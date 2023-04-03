@@ -1,0 +1,16 @@
+[Unit]
+Description=Automatic Switch Artifacts Update
+After=network-online.target
+
+[Service]
+Type=simple
+SyslogIdentifier=switch_artifacts
+ExecStart=/home/selfnet/update_switch_artifacts.sh
+TimeoutStopSec=600
+KillMode=process
+KillSignal=SIGINT
+Restart=on-failure
+RestartSec=30m
+
+[Install]
+WantedBy=multi-user.target

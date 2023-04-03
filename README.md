@@ -37,3 +37,5 @@ The purpose of this script is to automate and parallelize setting up Huawei swit
 ## Download switch configs programmatically
 
 To download all switch configs from the latest GitLab pipeline programmatically, simply run `python3 download_artifacts.py --token YOUR_TOKEN`. The token can be created on GitLab and only requires `read_api` access. Notice that running this script requires the python `requests` module to be installed.
+
+To automate the this process using systemd, see [here](download_artifacts/README.md).
