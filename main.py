@@ -8,7 +8,6 @@ import glob
 
 import db
 import config
-import readline
 import sysctl
 import labelprinter.draw
 import labelprinter.printer
@@ -233,14 +232,6 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
                 sys.stdout.write('\n')
             except Exception as e:
                 print(e)
-
-    def preloop(self):
-        if os.path.exists(self.histfile):
-            readline.read_history_file(self.histfile)
-
-    def postloop(self):
-        readline.set_history_length(-1)
-        readline.write_history_file(self.histfile)
 
 
 def main():

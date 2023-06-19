@@ -5,6 +5,5 @@ qrcode
 Pillow
 pycairo
 PyGObject
-readline
 playsound
 dateparser
