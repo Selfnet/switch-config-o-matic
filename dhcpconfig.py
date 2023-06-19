@@ -26,7 +26,7 @@ def generate_config(switches):
         config_lines.append(f"dhcp-option=set:{sw.name},7,{ztp_interface_ip}")
         # Set intermediate file option to set the master key
         config_lines.append(
-            f"dhcp-option=set:{sw.name},145,masterfile={masterkey_file},patchfile={patch_file}")
+            f"dhcp-option=set:{sw.name},145,masterfile={masterkey_file};patchfile={patch_file}")
 
     config_lines.append("")
     return "\n".join(config_lines)
