@@ -8,7 +8,7 @@ cmds = f"addr flush dev {ztp_interface}\n"
 cmds += f"addr add {ztp_interface_ip}/{ztp_network.prefixlen} dev {ztp_interface}\n"
 
 for config_path in glob.glob(f"{switch_config_dir}/*"):
-    if ".ini" in config_path:
+    if ".ini" in config_path or ".PAT" in config_path:
         continue
 
     switch_ip, network = get_ip_and_network_port_1(config_path.split("/")[-1].split(".")[0])

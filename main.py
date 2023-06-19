@@ -245,6 +245,9 @@ def main():
     if not os.path.exists(sftp_dir):
         os.makedirs(sftp_dir)  # podman does not auto-create volume mounts
 
+    for patch_file in os.listdir("patches"):
+        subprocess.check_call(["sudo", "cp", f"patches/{patch_file}", f"{config.switch_config_dir}/{patch_file}"])
+
     subprocess.call([
         config.container_engine, "run", "--name", "sftp_server", "--rm",
         "-v", f"{os.path.abspath(config.switch_config_dir)}:/home/switch",

@@ -2,6 +2,9 @@ from config import *
 
 
 def generate_config(switches):
+    masterkey_file = "/masterkey.ini"
+    patch_file = "/patchfile.PAT"
+
     config_lines = [
         "port=0",  # Disable DNS server
         f"interface={ztp_interface}",
@@ -22,7 +25,8 @@ def generate_config(switches):
         # Specify our IP address as syslog server
         config_lines.append(f"dhcp-option=set:{sw.name},7,{ztp_interface_ip}")
         # Set intermediate file option to set the master key
-        config_lines.append(f"dhcp-option=set:{sw.name},145,masterfile=/masterkey.ini")
+        config_lines.append(
+            f"dhcp-option=set:{sw.name},145,masterfile={masterkey_file},patchfile={patch_file}")
 
     config_lines.append("")
     return "\n".join(config_lines)
