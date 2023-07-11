@@ -68,7 +68,8 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
             try:
                 db.name_switch(mac, name)
                 playsound("audio/name_success.ogg", block=False)
-                self.do_print(name)
+                if config.use_labelprinter:
+                    self.do_print(name)
                 break
             except Exception as e:
                 print(e)
@@ -174,8 +175,12 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
         elif len(args) == 2:
             name = args[1]
             db.name_switch(args[0], args[1])
+        else:
+            print("Syntax: name [mac] name")
+            return
 
-        self.do_print(name)
+        if config.use_labelprinter:
+            self.do_print(name)
 
     def complete_name(self, text, line, begidx, endidx):
         mline = line.partition(' ')[2]

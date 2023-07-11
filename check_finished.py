@@ -45,17 +45,17 @@ async def main():
             for ping_successful, switch in zip(ping_results, switches):
                 if ping_successful:
                     try:
-                        print(f"Printing qr-label for {switch.name}...")
-                        imgsurf = labelprinter.draw.render_small_label(switch.name)
-                        labelprinter.printer.print_to_ip(imgsurf, config.labelprinter_hostname)
+                        if config.use_labelprinter:
+                            print(f"Printing qr-label for {switch.name}...")
+                            imgsurf = labelprinter.draw.render_small_label(switch.name)
+                            labelprinter.printer.print_to_ip(imgsurf, config.labelprinter_hostname)
                     except Exception as e:
                         print(f"Printing qr-label failed for {switch.name}: {e}. Please fix the printer.")
-                        print("Trying again on the next ping iteration...")
                         continue
-
-                    switch.status = SwitchStatus.FINISHED
-                    switch.finished_date = datetime.datetime.now()
-                    session.commit()
+                    finally:
+                        switch.status = SwitchStatus.FINISHED
+                        switch.finished_date = datetime.datetime.now()
+                        session.commit()
 
             time.sleep(10)
 
