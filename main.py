@@ -257,7 +257,7 @@ def main():
         config.container_engine, "run", "--name", "sftp_server", "--rm",
         "-v", f"{os.path.abspath(config.switch_config_dir)}:/home/switch",
         "-p", f"{config.sftp_port}:22",
-        "-d", "atmoz/sftp",
+        "-d", "docker.io/atmoz/sftp",
         f"{config.sftp_user}:{config.sftp_pass}:{os.getuid()}:{os.getuid()}"],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
