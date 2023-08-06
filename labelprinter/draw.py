@@ -21,19 +21,19 @@ def putpixel(surf, x, y, v):
         d[offset + i] = v
 
 
-def render_text(text, mac, mac_qr, add_selfnet_s):
+def render_text(text, mac, mac_qr, add_logo):
     recsurf = cairo.RecordingSurface(cairo.Content.COLOR_ALPHA, None)
 
     ctx = cairo.Context(recsurf)
     ctx.translate(0, 29)
     x_offset = 0
-    if add_selfnet_s:
-        selfnet_s = cairo.ImageSurface.create_from_png(get_filename("selfnet.png"))
+    if add_logo:
+        logo = cairo.ImageSurface.create_from_png(get_filename("logo.png"))
 
-        ctx.set_source_surface(selfnet_s)
+        ctx.set_source_surface(logo)
         ctx.paint()
         x_offset += 100
-    selfnet_s_offset = x_offset
+    logo_offset = x_offset
 
     if mac is not None:
         layout = PangoCairo.create_layout(ctx)
@@ -81,7 +81,7 @@ def render_text(text, mac, mac_qr, add_selfnet_s):
         qrimg = qr.make_image(fill_color="black", back_color="white").get_image()
         for x in range(qrimg.width):
             for y in range(qrimg.height):
-                putpixel(imgsurf, selfnet_s_offset + x, 30 + y, qrimg.getpixel((x, y)))
+                putpixel(imgsurf, logo_offset + x, 30 + y, qrimg.getpixel((x, y)))
         imgsurf.mark_dirty()
 
     return imgsurf
