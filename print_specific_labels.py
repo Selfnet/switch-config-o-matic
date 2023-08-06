@@ -6,8 +6,12 @@ import time
 
 
 def main():
-    switch_names = [f.split(".")[0] for f in os.listdir(config.switch_config_dir) if f.endswith(".cfg")]
-    switches_to_print = [n for n in switch_names if False]  # Some condition 
+    switch_names = [
+        f.split(".")[0]
+        for f in os.listdir(config.switch_config_dir)
+        if f.endswith(".cfg")
+    ]
+    switches_to_print = [n for n in switch_names if False]  # Some condition
 
     for name in switches_to_print:
         small_label = labelprinter.draw.render_small_label(name)
@@ -19,5 +23,5 @@ def main():
         time.sleep(5)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

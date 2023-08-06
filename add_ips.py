@@ -11,7 +11,9 @@ for config_path in glob.glob(f"{switch_config_dir}/*"):
     if ".ini" in config_path or ".PAT" in config_path:
         continue
 
-    switch_ip, network = get_ip_and_network_port_1(config_path.split("/")[-1].split(".")[0])
+    switch_ip, network = get_ip_and_network_port_1(
+        config_path.split("/")[-1].split(".")[0]
+    )
     if switch_ip is None or network is None:
         continue
 

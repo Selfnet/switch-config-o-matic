@@ -2,14 +2,17 @@ import re
 
 from utils import xml_to_keyvalue
 
+
 def get_time_from_syslog_line(line):
     time_contained = line.split(";")[0]
     time_ = re.match(r"<.*>(.*) HUAWEI", time_contained, re.DOTALL).groups()[0]
     return time_
 
+
 def parse_syslog_line_userdefined(line):
     msg_text = line.split("; ")[1].split("(")[0]
     return msg_text
+
 
 def parse_syslog_line_error(line):
     tags = re.findall(r"<error-tag>(.*)</error-tag>", line)
@@ -17,13 +20,17 @@ def parse_syslog_line_error(line):
 
     return f"ERROR: {tags[0]} | {error_msgs[0]}"
 
+
 def get_human_readable_syslog_messages(syslog_lines):
     final_messages = []
     for line in syslog_lines:
         if "ssh" in line.lower() and "Body=)" in line:
             continue
-        if ("OPS_RESTCONF" in line or "Body=)" in line or "IM_SUPPRESS_LOG" in line) \
-            and not "<errors>" in line and not "ssh" in line.lower():
+        if (
+            ("OPS_RESTCONF" in line or "Body=)" in line or "IM_SUPPRESS_LOG" in line)
+            and not "<errors>" in line
+            and not "ssh" in line.lower()
+        ):
             continue
         if "first-time-enable" in line:
             continue
@@ -51,4 +58,3 @@ def get_human_readable_syslog_messages(syslog_lines):
         final_messages.append(line)
 
     return final_messages
-

@@ -22,11 +22,16 @@ def generate_audios(out_dir="."):
         tts = gTTS(audio[1], lang="en")
         tts.save(f"{out_dir}/{audio[0]}.mp3")
         # Convert to ogg with ffmpeg and change tempo
-        subprocess.run([
-            "ffmpeg", "-i", f"{out_dir}/{audio[0]}.mp3",
-            "-filter:a", f"atempo={tempo}",
-            f"{out_dir}/{audio[0]}.ogg",
-        ])
+        subprocess.run(
+            [
+                "ffmpeg",
+                "-i",
+                f"{out_dir}/{audio[0]}.mp3",
+                "-filter:a",
+                f"atempo={tempo}",
+                f"{out_dir}/{audio[0]}.ogg",
+            ]
+        )
         os.remove(f"{out_dir}/{audio[0]}.mp3")
 
 

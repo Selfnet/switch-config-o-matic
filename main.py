@@ -19,9 +19,10 @@ from huawei_syslog import get_human_readable_syslog_messages
 Session = create_scoped_session()
 configure_logging()
 
+
 class SwitchConfigurOmaticShell(cmd.Cmd):
-    intro = ''
-    prompt = 'config-o-matic> '
+    intro = ""
+    prompt = "config-o-matic> "
 
     def __init__(self):
         cmd.Cmd.__init__(self)
@@ -40,7 +41,7 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
 
         db.add_switch(arg)
 
-        print(f'Added {arg}')
+        print(f"Added {arg}")
 
     def do_add(self, _):
         while True:
@@ -60,8 +61,13 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
 
         while True:
             name = input("Name: ")
-            if len(name) == 0 or len(glob.glob(f"{config.switch_config_dir}/{name}*")) == 0:
-                print(f"Switch config for switch '{name}' not found in {config.switch_config_dir}")
+            if (
+                len(name) == 0
+                or len(glob.glob(f"{config.switch_config_dir}/{name}*")) == 0
+            ):
+                print(
+                    f"Switch config for switch '{name}' not found in {config.switch_config_dir}"
+                )
                 playsound("audio/name_failure.ogg", block=False)
                 continue
 
@@ -75,7 +81,7 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
                 print(e)
                 playsound("audio/name_failure.ogg")
 
-        print(f'Added {name} ({mac})')
+        print(f"Added {name} ({mac})")
 
     def do_status(self, arg):
         arg = arg.strip()
@@ -107,26 +113,32 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
         else:
             mline = line.split(" ")[-1]
             offs = len(mline) - len(text)
-            return [f'{s.name[offs:]} ' for s in db.SwitchStatus if s.name.startswith(mline)]
+            return [
+                f"{s.name[offs:]} " for s in db.SwitchStatus if s.name.startswith(mline)
+            ]
 
     def _complete_name_or_mac(self, text, line, begidx, endidx):
-        mline = line.partition(' ')[2]
+        mline = line.partition(" ")[2]
         offs = len(mline) - len(text)
         macs, names = db.get_macs_names()
         identifiers = macs + names
-        return [f'{s[offs:]} ' for s in identifiers if s.startswith(mline)]
+        return [f"{s[offs:]} " for s in identifiers if s.startswith(mline)]
 
     def do_print(self, arg):
         name = arg.strip()
         switch = db.query_name(name)
         try:
             print(f"Printing label for {switch.name}...")
-            imgsurf = labelprinter.draw.render_text(switch.name, switch.mac, switch.mac, add_selfnet_s=True)
+            imgsurf = labelprinter.draw.render_text(
+                switch.name, switch.mac, switch.mac, add_logo=True
+            )
             labelprinter.printer.print_to_ip(imgsurf, config.labelprinter_hostname)
             print(f"Printed label for {switch.name}.")
         except Exception as e:
             print(f"Printing qr-label failed for {switch.name}: {e}")
-            print("Fix the printer, execute the previous name command again and ignore the 'already named' error.")
+            print(
+                "Fix the printer, execute the previous name command again and ignore the 'already named' error."
+            )
 
     def do_print_small_label(self, arg):
         name = arg.strip()
@@ -136,7 +148,9 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
             imgsurf = labelprinter.draw.render_small_label(switch.name)
             labelprinter.printer.print_to_ip(imgsurf, config.labelprinter_hostname)
         except Exception as e:
-            print(f"Printing qr-label failed for {switch.name}: {e}. Please fix the printer.")
+            print(
+                f"Printing qr-label failed for {switch.name}: {e}. Please fix the printer."
+            )
 
     def complete_status(self, text, line, begidx, endidx):
         self._complete_name_or_mac(text, line, begidx, endidx)
@@ -150,12 +164,14 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
     def do_log(self, arg):
         args = arg.split()
         do_verbose = "-v" in args
-        while "-v" in args: args.remove("-v")
+        while "-v" in args:
+            args.remove("-v")
         name_or_mac = args[0]
 
         msgs = db.get_syslog_entries(name_or_mac)
         if do_verbose:
-            for msg in msgs: print(msg + "\n")
+            for msg in msgs:
+                print(msg + "\n")
         else:
             readable_msgs = get_human_readable_syslog_messages(msgs)
             for msg in readable_msgs:
@@ -183,10 +199,10 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
             self.do_print(name)
 
     def complete_name(self, text, line, begidx, endidx):
-        mline = line.partition(' ')[2]
+        mline = line.partition(" ")[2]
         offs = len(mline) - len(text)
         macs, _ = db.get_macs_names()
-        return [f'{s[offs:]} ' for s in macs if s.startswith(mline)]
+        return [f"{s[offs:]} " for s in macs if s.startswith(mline)]
 
     def do_rm(self, arg):
         db.remove_switch(arg)
@@ -201,7 +217,7 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
             if db.query_mac(mac):
                 self.do_status(mac)
         else:
-            print(f'ERROR: Unknown syntax: {line}')
+            print(f"ERROR: Unknown syntax: {line}")
 
     def do_shell(self, arg):
         os.system(arg)
@@ -225,7 +241,7 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
 
     def get_valid_commands(self):
         names = self.get_names()
-        valid = [name[4:] for name in names if name[:3] == 'do_']
+        valid = [name[4:] for name in names if name[:3] == "do_"]
         return valid
 
     def cmdloop_with_keyboard_interrupt(self):
@@ -234,7 +250,7 @@ class SwitchConfigurOmaticShell(cmd.Cmd):
                 self.cmdloop()
                 self.exit_requested = True
             except KeyboardInterrupt:
-                sys.stdout.write('\n')
+                sys.stdout.write("\n")
             except Exception as e:
                 print(e)
 
@@ -251,14 +267,30 @@ def main():
         os.makedirs(sftp_dir)  # podman does not auto-create volume mounts
 
     for patch_file in os.listdir("patches"):
-        subprocess.check_call(["sudo", "cp", f"patches/{patch_file}", f"{config.switch_config_dir}/{patch_file}"])
+        subprocess.check_call(
+            [
+                "sudo",
+                "cp",
+                f"patches/{patch_file}",
+                f"{config.switch_config_dir}/{patch_file}",
+            ]
+        )
 
-    subprocess.call([
-        config.container_engine, "run", "--name", "sftp_server", "--rm",
-        "-v", f"{os.path.abspath(config.switch_config_dir)}:/home/switch",
-        "-p", f"{config.sftp_port}:22",
-        "-d", "docker.io/atmoz/sftp",
-        f"{config.sftp_user}:{config.sftp_pass}:{os.getuid()}:{os.getuid()}"],
+    subprocess.call(
+        [
+            config.container_engine,
+            "run",
+            "--name",
+            "sftp_server",
+            "--rm",
+            "-v",
+            f"{os.path.abspath(config.switch_config_dir)}:/home/switch",
+            "-p",
+            f"{config.sftp_port}:22",
+            "-d",
+            "docker.io/atmoz/sftp",
+            f"{config.sftp_user}:{config.sftp_pass}:{os.getuid()}:{os.getuid()}",
+        ],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
@@ -277,14 +309,18 @@ def main():
     # Remove privileged ports exception
     subprocess.call(["sudo", "setcap", "-r", python_exec])
 
-    print('Welcome to the switch-config-o-matic shell.   Type help or ? to list commands.\n')
+    print(
+        "Welcome to the switch-config-o-matic shell.   Type help or ? to list commands.\n"
+    )
     SwitchConfigurOmaticShell().cmdloop_with_keyboard_interrupt()
     syslog_process.terminate()
     dhcp_process.terminate()
     ping_process.terminate()
-    subprocess.call([config.container_engine, "stop", "sftp_server"],
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL)
+    subprocess.call(
+        [config.container_engine, "stop", "sftp_server"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
     sysctl.restore_original_values()
 
 

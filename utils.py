@@ -5,12 +5,17 @@ from lxml import etree
 
 from config import LOG_FORMAT
 
-mac_regex = re.compile('^(?:[0-9A-Fa-f]{2}[:-]?){5}(?:[0-9A-Fa-f]{2})$')
+mac_regex = re.compile("^(?:[0-9A-Fa-f]{2}[:-]?){5}(?:[0-9A-Fa-f]{2})$")
 
 
 def configure_logging():
-    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT, datefmt='%d.%m.%Y, %H:%M:%S',
-        filename="log.txt", filemode='a')
+    logging.basicConfig(
+        level=logging.INFO,
+        format=LOG_FORMAT,
+        datefmt="%d.%m.%Y, %H:%M:%S",
+        filename="log.txt",
+        filemode="a",
+    )
 
 
 def ensure_ztp_mac(mac):
@@ -31,6 +36,8 @@ def ensure_ztp_mac(mac):
 def xml_to_keyvalue(xml):
     result = ""
     root = etree.fromstring(xml)
-    result = ", ".join([f"{node.tag}={node.text}" for node in root.iter("*") if len(node) == 0])
+    result = ", ".join(
+        [f"{node.tag}={node.text}" for node in root.iter("*") if len(node) == 0]
+    )
 
     return result

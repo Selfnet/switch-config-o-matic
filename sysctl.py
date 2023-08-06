@@ -17,8 +17,11 @@ def _get_value(key):
 
 
 def _set_value(key, value):
-    subprocess.check_call(["sudo", "sysctl", "-w", f"{key}={value}"],
-                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.check_call(
+        ["sudo", "sysctl", "-w", f"{key}={value}"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
 
 
 def store_original_values():

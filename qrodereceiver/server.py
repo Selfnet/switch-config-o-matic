@@ -12,12 +12,14 @@ from pynput.keyboard import Controller
 keyboard = Controller()
 
 import logging
-log = logging.getLogger('werkzeug')
+
+log = logging.getLogger("werkzeug")
 log.setLevel(logging.ERROR)
 
-mac_regex = re.compile('^(?:[0-9A-Fa-f]{2}[:-]){5}(?:[0-9A-Fa-f]{2})$')
+mac_regex = re.compile("^(?:[0-9A-Fa-f]{2}[:-]){5}(?:[0-9A-Fa-f]{2})$")
 
 app = Flask(__name__)
+
 
 @app.route("/", methods=["GET"])
 def hello_world():
@@ -29,8 +31,9 @@ def hello_world():
         qr += " "
 
     keyboard.type(qr)
-    
+
     print(qr)
     return ""
+
 
 app.run(host="0.0.0.0", debug=False)

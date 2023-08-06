@@ -4,8 +4,11 @@ import datetime
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--since", help="""Only print switches finished since this date
-and unfinished ones. Supports human language.""")
+parser.add_argument(
+    "--since",
+    help="""Only print switches finished since this date
+and unfinished ones. Supports human language.""",
+)
 args = parser.parse_args()
 
 if args.since:

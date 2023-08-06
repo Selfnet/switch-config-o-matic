@@ -9,7 +9,8 @@ from db import create_scoped_session, Switch, SwitchStatus
 
 Session = create_scoped_session()
 
-class DhcpServer():
+
+class DhcpServer:
     def __init__(self):
         self.shutdown_requested = False
 
@@ -23,9 +24,19 @@ class DhcpServer():
             with open("dnsmasq.conf", "w") as f:
                 f.write(dnsmasq_config)
 
-            dnsmasq_result = subprocess.run(["sudo", "timeout", str(dhcp_reload_interval_sec),
-                "dnsmasq", "--no-daemon", "--conf-file=dnsmasq.conf"], text=True,
-                stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            dnsmasq_result = subprocess.run(
+                [
+                    "sudo",
+                    "timeout",
+                    str(dhcp_reload_interval_sec),
+                    "dnsmasq",
+                    "--no-daemon",
+                    "--conf-file=dnsmasq.conf",
+                ],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+            )
 
             output = dnsmasq_result.stdout
             lines = output.splitlines()
