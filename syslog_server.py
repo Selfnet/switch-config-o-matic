@@ -1,13 +1,13 @@
-LOG_FILE = 'syslog_server.log'
-# Bei expliziter Addresse des Interfaces muss man immer warten bis der Switch hochgefahren ist...
-HOST, PORT = "0.0.0.0", 514
-
 import logging
 import utils
 import socketserver
 from db import create_scoped_session, Switch, SyslogEntry
 
+LOG_FILE = "syslog_server.log"
+# With explicit address of the interface you always have to wait until the switch is powered up...
+HOST, PORT = "0.0.0.0", 514
 Session = create_scoped_session()
+
 
 class SyslogUDPHandler(socketserver.BaseRequestHandler):
     def handle(self):
@@ -20,7 +20,7 @@ class SyslogUDPHandler(socketserver.BaseRequestHandler):
             session.commit()
 
 
-class SyslogServer():
+class SyslogServer:
     def __init__(self):
         self._server = socketserver.UDPServer((HOST, PORT), SyslogUDPHandler)
 
