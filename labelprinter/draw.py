@@ -24,12 +24,12 @@ def render_text(text, mac, mac_qr, add_selfnet_s) :
     ctx = cairo.Context(recsurf)
     ctx.translate(0,29)
     x_offset = 0
-    if add_selfnet_s :
+    if add_selfnet_s:
         selfnet_s = cairo.ImageSurface.create_from_png(get_filename("selfnet.png"))
 
         ctx.set_source_surface(selfnet_s)
         ctx.paint()
-        x_offset += 80
+        x_offset += 100
     selfnet_s_offset = x_offset
     
     if mac is not None :
