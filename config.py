@@ -9,6 +9,8 @@ labelprinter_hostname = "labelprinter-2.workstation.selfnet.de"
 container_engine = "docker"
 
 # Other options
+use_labelprinter = True
+
 LOG_FORMAT = "%(asctime)s | %(filename)s | %(levelname)s | %(thread)d: %(message)s"
 
 ztp_network = ipaddress.ip_network("192.168.0.0/23")
